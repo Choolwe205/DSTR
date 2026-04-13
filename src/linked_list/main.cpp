@@ -34,6 +34,7 @@ class resident{
         cout<<current->averageDayPerMonth<<endl;
         current=current->next;
     }
+    cout<<"null";
     };
     int getSize()
     {
