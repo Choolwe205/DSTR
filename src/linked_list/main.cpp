@@ -34,7 +34,17 @@ class resident{
         cout<<current->averageDayPerMonth<<endl;
         current=current->next;
     }
-    
+    };
+    int getSize()
+    {
+        int count=0;
+        resident *current=this;
+        while( current !=nullptr)
+        {
+            count++;
+            current=current->next;
+        }
+        return count;
     };
     
 };
@@ -46,8 +56,8 @@ int main(){
     resident *third=new resident("A003",28,"bicycle",8,0,26,nullptr);
     head->next=second;
     second->next=third;
-
     head->traversePrint();
+    cout<< "The size is: "<<head->getSize();
 
     return 0;
     
