@@ -25,94 +25,108 @@ class resident{
    
     };  
 
+    class ResidentList {
+        private:
+        resident * head= nullptr;
+        int size=0;
 //Logic for later 
 
-//  void traversePrint(resident*head){
-//     resident* current=this;
-//     while (current!=nullptr)
-//     {
-//         cout<<current->residentID<<", ";
-//         cout<<current->age<<", ";
-//         cout<<current->modeOfTransport<<", ";
-//         cout<<current->dailyDistance<<", ";
-//         cout<<current->carbonEmissionFactor<<", ";
-//         cout<<current->averageDayPerMonth<<endl;
-//         current=current->next;
-//     }
-//     cout<<"End";
-//     };
-//     int getSize(resident*head)
-//     {
-//         int count=0;
-//         resident *current=head;
-//         while( current !=nullptr)
-//         {
-//             count++;
-//             current=current->next;
-//         }
-//         return count;
-//     };
-//     void insertAtStart(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissions,int resaverageDayPerMonth,resident* &head){
-//         resident*newResident=new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
-//         newResident->next=head;
-//         head=newResident;
-//     };
+ void traversePrint(){
+    resident* current=head;
 
-//     void insertAtEnd(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissions,int resaverageDayPerMonth,resident* &head)
-//     {
-//         resident*newResident=new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
-//         if (head==nullptr){
-//         head=newResident;
-//         return;
-//     };
-//         resident*currentResident=head;
-//         while(currentResident->next!=nullptr)
-//         {
-//             currentResident=currentResident->next;
-//         };
-//         currentResident->next=newResident;
-//     };
-//     void insertAtindex(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissions,int resaverageDayPerMonth,resident* &head, int index)
-//     {
+    if (head==nullptr){
+        cout<<"This List is empty";
+        return;
+    }
+    while (current!=nullptr)
+    {
+        cout<<current->residentID<<", ";
+        cout<<current->age<<", ";
+        cout<<current->modeOfTransport<<", ";
+        cout<<current->dailyDistance<<", ";
+        cout<<current->carbonEmissionFactor<<", ";
+        cout<<current->averageDayPerMonth<<endl;
+        current=current->next;
+    }
+    cout<<"--End of List--";
+    };
 
-//         if (index<0)
-//         {
-//             cout<<"Index cannot be less than 0"<<endl;
-//             return;
-//         }
+    int getSize()
+    {
+        int count=0;
+        resident *current=head;
+        while( current !=nullptr)
+        {
+            count++;
+            current=current->next;
+        }
+        return count;
+    };
+    void insertAtStart(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissions,int resaverageDayPerMonth){
+        resident*newResident=new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
+        newResident->next=head;
+        head=newResident;
+        size++;
+    };
 
-//         //IF INDEX IS 0
-//         if (index==0){
-//             resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
-//             newResident->next=head;
-//             head=newResident;
-//             return;
-//         }
-//         //IF INDEX IS WITHIN BOUNDS 
-//         resident* current =head;
-//         for (int i =0; i < index -1 && current!=nullptr;i++ )
-//         {
-//             current=current->next;
-//         }
-//         if (current==nullptr){
-//             cout<<"Index is out of bounds\n";
-//             return;
-//         }
-//         resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
-//         newResident->next=current->next;
-//         current->next=newResident;
-//     }
-//     void clear (resident* &head)
-//     {
-//         resident* current=head;
-//         while (current!=nullptr){
-//             resident* temp =current->next;
-//             delete head;
-//             current=temp;
-//         }
-//         head=nullptr;
-//     }
+    void insertAtEnd(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissions,int resaverageDayPerMonth)
+    {
+        resident*newResident=new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
+        if (head==nullptr){
+        head=newResident;
+        return;
+    };
+        resident*currentResident=head;
+        while(currentResident->next!=nullptr)
+        {
+            currentResident=currentResident->next;
+        };
+        currentResident->next=newResident;
+        size++;
+    };
+    void insertAtindex(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissions,int resaverageDayPerMonth, int index)
+    {
 
+        if (index<0)
+        {
+            cout<<"Index cannot be less than 0"<<endl;
+            return;
+        }
+
+        //IF INDEX IS 0
+        if (index==0){
+            resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
+            newResident->next=head;
+            head=newResident;
+            size++;
+            return;
+        }
+        //IF INDEX IS WITHIN BOUNDS 
+        resident* current =head;
+        for (int i =0; i < index -1 && current!=nullptr;i++ )
+        {
+            current=current->next;
+        }
+        if (current==nullptr){
+            cout<<"Index is out of bounds\n";
+            return;
+        }
+        resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
+        newResident->next=current->next;
+        current->next=newResident;
+        size++;
+    }
+    void clear ()
+    {
+        resident* current=head;
+        while (head!=NULL){
+            current=current->next;
+            delete head;
+            head=current;
+        }
+        size=0;
+    }
+    };
 
 
 
