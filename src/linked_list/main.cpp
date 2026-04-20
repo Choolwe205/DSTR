@@ -97,6 +97,16 @@ class resident{
         newResident->next=current->next;
         current->next=newResident;
     }
+    void clear (resident* &head)
+    {
+        resident* current=head;
+        while (current!=nullptr){
+            resident* temp =current->next;
+            delete head;
+            current=temp;
+        }
+        head=nullptr;
+    }
 
     };  
 int main(){
@@ -110,7 +120,9 @@ int main(){
     // head->traversePrint();
     cout<< "The size is: "<<head->getSize(head)<<endl;
     head->insertAtStart("A004",26,"car",8,0,26,head);
+    head->insertAtindex("A006",26,"car",8,0,26,head,2);
     head->traversePrint(head);
+    head->clear();
 
     return 0;
     
