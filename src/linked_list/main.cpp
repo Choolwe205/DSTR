@@ -62,16 +62,16 @@ class resident{
         }
         return count;
     };
-    void insertAtStart(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissions,int resaverageDayPerMonth){
-        resident*newResident=new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
+    void insertAtStart(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissionFactor,int resaverageDayPerMonth){
+        resident*newResident=new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
         newResident->next=head;
         head=newResident;
         size++;
     };
 
-    void insertAtEnd(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissions,int resaverageDayPerMonth)
+    void insertAtEnd(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissionFactor,int resaverageDayPerMonth)
     {
-        resident*newResident=new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
+        resident*newResident=new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
         if (head==nullptr){
         head=newResident;
         return;
@@ -84,7 +84,7 @@ class resident{
         currentResident->next=newResident;
         size++;
     };
-    void insertAtindex(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissions,int resaverageDayPerMonth, int index)
+    void insertAtindex(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissionFactor,int resaverageDayPerMonth, int index)
     {
 
         if (index<0)
@@ -95,7 +95,7 @@ class resident{
 
         //IF INDEX IS 0
         if (index==0){
-            resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
+            resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
             newResident->next=head;
             head=newResident;
             size++;
@@ -111,7 +111,7 @@ class resident{
             cout<<"Index is out of bounds\n";
             return;
         }
-        resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
+        resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
         newResident->next=current->next;
         current->next=newResident;
         size++;
