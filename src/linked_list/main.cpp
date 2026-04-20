@@ -67,6 +67,37 @@ class resident{
         };
         currentResident->next=newResident;
     };
+    void insertAtindex(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissions,int resaverageDayPerMonth,resident* &head, int index)
+    {
+
+        if (index<0)
+        {
+            cout<<"Index cannot be less than 0"<<endl;
+            return;
+        }
+
+        //IF INDEX IS 0
+        if (index==0){
+            resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
+            newResident->next=head;
+            head=newResident;
+            return;
+        }
+        //IF INDEX IS WITHIN BOUNDS 
+        resident* current =head;
+        for (int i =0; i < index -1 && current!=nullptr;i++ )
+        {
+            current=current->next;
+        }
+        if (current==nullptr){
+            cout<<"Index is out of bounds\n";
+            return;
+        }
+        resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissions,resaverageDayPerMonth,nullptr};
+        newResident->next=current->next;
+        current->next=newResident;
+    }
+
     };  
 int main(){
 
@@ -80,6 +111,7 @@ int main(){
     cout<< "The size is: "<<head->getSize(head)<<endl;
     head->insertAtStart("A004",26,"car",8,0,26,head);
     head->traversePrint(head);
+
     return 0;
     
 }
