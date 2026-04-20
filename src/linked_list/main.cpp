@@ -3,6 +3,7 @@ using namespace std;
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 class resident{
     public:
     string residentID;
@@ -123,10 +124,11 @@ class resident{
             }
             size=0;
         }
-         void loadFromCSV(string filename){
+        void loadFromCSV(string filename){
             ifstream file(filename);
             if (!file.is_open()){
                 cout<<"Error opening file\n";
+                return;
             }
             //Make a line and skip header
             string line;
@@ -137,20 +139,37 @@ class resident{
             stringstream ss(line);
             string ID, ageStr,transport, distanceStr,factorStr,daysStr;
 
+
+            // Split using commas
             getline(ss, ID, ',');
             getline(ss, ageStr, ',');
             getline(ss, transport, ',');
             getline(ss, distanceStr, ',');
             getline(ss, factorStr, ',');
-            getline(ss, daysStr, ',');
-        }}
+            getline(ss, daysStr);
+
+            //convert the data types
+            int age = stoi(ageStr);
+            int distance = stoi(distanceStr);
+            double factor = stod(factorStr);
+            int days = stoi(daysStr);
+            insertAtEnd(ID,age,transport,distance,factor, days);
+        }
+            file.close();
+        }
+
         };
 
        
 int main(){
 
     cout<<"Linked Lists version for demo\n";
-    ResidentList* resList; //stack 
-    ResidentList *reList =new ResidentList(); //heap
+    ResidentList resList; //stack 
+    // ResidentList *reList =new ResidentList(); //heap
+    resList.loadFromCSV("../../data/dataset1-cityA.csv");
+    resList.loadFromCSV("../../data/dataset2-cityB.csv");
+    resList.loadFromCSV("../../data/dataset3-cityC.csv");
+    resList.traversePrint();
+    cout << filesystem::current_path() << endl;
     return 0;
 }
