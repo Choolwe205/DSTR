@@ -131,7 +131,6 @@ class resident{
 int main(){
 
     cout<<"Linked Lists version for demo\n";
-
     ResidentList* resList; //stack 
     ResidentList *reList =new ResidentList(); //heap
     return 0;
