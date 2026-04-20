@@ -17,7 +17,7 @@ class resident{
     resident* next;
 
     resident(){};
-
+    
     resident(string residentID,int age,string modeOfTransport, int dailyDistance, double carbonEmissionFactor,int averageDayPerMonth,resident* next){
     this->residentID= residentID;
     this->age= age;
