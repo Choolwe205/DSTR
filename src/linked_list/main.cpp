@@ -129,5 +129,4 @@ int main(){
     ResidentList* resList; //stack 
     ResidentList *reList =new ResidentList(); //heap
     return 0;
-    
-} 
+}
