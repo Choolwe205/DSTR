@@ -22,16 +22,13 @@ class resident{
     this->averageDayPerMonth= averageDayPerMonth;
     this->next=next;
     }
-   
     };  
-
 
     //Logic for the list class
     class ResidentList {
         private:
         resident * head= nullptr;
         int size=0;
-
  
     public:
         //Overloaded constructors 
