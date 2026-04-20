@@ -1,6 +1,8 @@
 #include <iostream>
 using namespace std;
-#include <String>
+#include <string>
+#include <fstream>
+#include <sstream>
 class resident{
     public:
     string residentID;
@@ -121,8 +123,30 @@ class resident{
             }
             size=0;
         }
+         void loadFromCSV(string filename){
+            ifstream file(filename);
+            if (!file.is_open()){
+                cout<<"Error opening file\n";
+            }
+            //Make a line and skip header
+            string line;
+            getline(file,line);
+            //Loop through the file
+            while(getline(file,line)){
+            //split the line
+            stringstream ss(line);
+            string ID, ageStr,transport, distanceStr,factorStr,daysStr;
+
+            getline(ss, ID, ',');
+            getline(ss, ageStr, ',');
+            getline(ss, transport, ',');
+            getline(ss, distanceStr, ',');
+            getline(ss, factorStr, ',');
+            getline(ss, daysStr, ',');
+        }}
         };
 
+       
 int main(){
 
     cout<<"Linked Lists version for demo\n";
