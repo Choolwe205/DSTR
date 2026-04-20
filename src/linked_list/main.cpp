@@ -86,7 +86,6 @@ class resident{
         };
         void insertAtindex(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissionFactor,int resaverageDayPerMonth, int index)
         {
-
             if (index<0)
             {
                 cout<<"Index cannot be less than 0"<<endl;
@@ -127,7 +126,6 @@ class resident{
         }
         };
 
-
 int main(){
 
     cout<<"Linked Lists version for demo\n";
@@ -135,4 +133,4 @@ int main(){
     ResidentList *reList =new ResidentList(); //heap
     return 0;
     
-}
+} 
