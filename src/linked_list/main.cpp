@@ -124,6 +124,48 @@ class resident{
             }
             size=0;
         }
+    //Deletion Methods
+        void deleteAtBeginning()
+        {
+            if (head==nullptr){
+                cout<<"The list is already empty";
+                return;
+            }
+            resident *temp=head;
+            head=head->next;
+            delete temp;
+            size--;
+        }
+
+        void deleteAtEnd (){
+            resident* current=head;
+            resident*temp=head;
+            if (head==nullptr)
+            {
+                cout<<"This list is already empty\n";
+                return;
+            }
+            
+            if (head->next==nullptr)
+            {  
+                head=head->next;
+                delete temp;
+                cout<<"Single element was deleted\n";
+                size--;
+                return;
+            }
+            
+            while(current->next->next!=nullptr)
+            {
+                current=current->next; 
+            }
+            temp=current->next;
+            delete temp;
+            current->next=nullptr;
+            size--;
+        }
+
+
         void loadFromCSV(string filename){
             ifstream file(filename);
             if (!file.is_open()){
