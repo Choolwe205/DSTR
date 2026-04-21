@@ -139,7 +139,6 @@ class resident{
             stringstream ss(line);
             string ID, ageStr,transport, distanceStr,factorStr,daysStr;
 
-
             // Split using commas
             getline(ss, ID, ',');
             getline(ss, ageStr, ',');
