@@ -2,7 +2,7 @@
 using namespace std;
 int main(){
 
-    cout<<"Linked Lists version";
+    cout<<"Linked Lists"<<endl;
     return 0;
     
 }
