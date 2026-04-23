@@ -231,9 +231,11 @@ class Resident{
             //Constructor Overload
             computation (FileManager* fm){
                 this->load =  fm;
-            }
-            double computeEmission(Resident * res){
+            }// making sure it takes the list from file manager
+
+            double computeEmission(Resident * res){ //Function to calculate emissions for a specified node
                 if(res==nullptr){
+                    cout<<"The list is empty no value"<<endl;
                     return 0;
                 }
                     double emission=res->averageDayPerMonth*
@@ -242,20 +244,22 @@ class Resident{
                 return emission;
             }
 
+            //Method below calculates the total emisiion, 
             double computeTotalEmission(){
                 double totalEmission=0;;
                 double product=0;
 
-                ResidentList* list=load->GetResidentList();
-                link=list->GetHead();
+                ResidentList* list=load->GetResidentList(); //get the list 
+                link=list->GetHead();   //assign link to the head of the list
                 if(link==nullptr){
+                    cout<<"The list is empty no value"<<endl;
                     return 0;
                 }
-                while(link!=nullptr)
+                while(link!=nullptr)    //Traverse the list and accumulate the values 
                 {   
-                    product=computeEmission(link);
+                    product=computeEmission(link); //calls the emmission function 
                     totalEmission+=product;
-                    link=link->next;
+                    link=link->next; 
                 }
                 return totalEmission;
             }
