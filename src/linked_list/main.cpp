@@ -211,7 +211,7 @@ class Resident{
             getline(ss, factorStr, ',');
             getline(ss, daysStr);
 
-            //convert the data types
+            //convert the data types using the string libraty st function 
             int age = stoi(ageStr);
             int distance = stoi(distanceStr);
             double factor = stod(factorStr);
@@ -271,37 +271,37 @@ int main(){
     cout<<"-------The following is an Implementation of linked lists for DSTR PART 1-------\n";
     cout<<"============================================================================================\n";
     
-    ResidentList listA, listB, listC; 
+    ResidentList listA, listB, listC; // make lists for each city
     FileManager fmcityA, fmcityB, fmcityC;  //both are on stack
     fmcityA.SetResidentList(&listA); 
     fmcityB.SetResidentList(&listB);
     fmcityC.SetResidentList(&listC);
     
     fmcityA.loadFromCSV("../../data/dataset1-cityA.csv");
-    fmcityB.loadFromCSV("../../data/dataset2-cityB.csv");
+    fmcityB.loadFromCSV("../../data/dataset2-cityB.csv");   //load using the function for load csv
     fmcityC.loadFromCSV("../../data/dataset3-cityC.csv"); 
     
     cout<<"============================================================================================\n";
     cout<<"City A data\n";
     cout<<"============================================================================================\n";
-    listA.traversePrint();
+    listA.traversePrint();  //Print the list with traversal
 
     cout<<"============================================================================================\n";
     cout<<"City B data\n";
     cout<<"============================================================================================\n";
-    listB.traversePrint();
+    listB.traversePrint();  //Print the list with traversal
 
     cout<<"============================================================================================\n";
     cout<<"City C data\n";
     cout<<"============================================================================================\n";
-    listC.traversePrint();
+    listC.traversePrint();  //Print the list with traversal
     
     computation computeA(&fmcityA);
-    computation computeB(&fmcityB);
-    computation computeC(&fmcityC);
+    computation computeB(&fmcityB); //compute objects
+    computation computeC(&fmcityC); 
 
     cout<<"Total emission for City A: "<<computeA.computeTotalEmission()<<endl;;
-    cout<<"Total emission City B: "<<computeB.computeTotalEmission()<<endl;;
+    cout<<"Total emission City B: "<<computeB.computeTotalEmission()<<endl;;    //Print the total emissions for each city
     cout<<"Total emission City C: "<<computeC.computeTotalEmission()<<endl;;
 
     return 0;
