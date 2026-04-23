@@ -4,7 +4,8 @@ using namespace std;
 #include <fstream>
 #include <sstream>
 #include <filesystem>
-class resident{
+class Resident{
+    //This class holds the values that a resident must have
     public:
     string residentID;
     int age;
@@ -12,11 +13,10 @@ class resident{
     int dailyDistance;
     double carbonEmissionFactor;
     int averageDayPerMonth;
-    resident* next;
+    Resident* next; 
 
-    resident(){};
-
-    resident(string residentID,int age,string modeOfTransport, int dailyDistance, double carbonEmissionFactor,int averageDayPerMonth,resident* next){
+    Resident(){};
+    Resident(string residentID,int age,string modeOfTransport, int dailyDistance, double carbonEmissionFactor,int averageDayPerMonth,Resident* next){
     this->residentID= residentID;
     this->age= age;
     this->modeOfTransport= modeOfTransport;
@@ -26,19 +26,29 @@ class resident{
     this->next=next;
     }
     };  
-
-    //Logic for the list class
     class ResidentList {
+          //Class to handle the linked list and the operations of the list including insertion and clearing and deletion
         private:
-        resident * head= nullptr;
+        Resident * head= nullptr;
         int size=0;
- 
     public:
+    //Accessors and Mutators for head and accesor for size, only accesor is needed
+    int getSize()
+        {
+           return size;
+        };
+
+    void SetHead(Resident*head){
+        this->head=head;
+    }
+    Resident *GetHead(){
+        return head;
+    }
         //Overloaded constructors 
         ResidentList(){};
 
     void traversePrint(){
-        resident* current=head;
+        Resident* current=head;
 
         if (head==nullptr){
             cout<<"This List is empty";
@@ -54,15 +64,11 @@ class resident{
             cout<<current->averageDayPerMonth<<endl;
             current=current->next;
         }
-        cout<<"--End of List--";
+        cout<<"--End of List--"<<endl;
         };
 
-        int getSize()
-        {
-           return size;
-        };
         void insertAtStart(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissionFactor,int resaverageDayPerMonth){
-            resident*newResident=new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
+            Resident*newResident=new Resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
             newResident->next=head;
             head=newResident;
             size++;
@@ -70,13 +76,13 @@ class resident{
 
         void insertAtEnd(string ID,int resage,string resmodeOfTransport, int resdailyDistance, double rescarbonEmissionFactor,int resaverageDayPerMonth)
         {
-            resident*newResident=new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
+            Resident*newResident=new Resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
             if (head==nullptr){
             head=newResident;
             size++;
             return;
         };
-            resident*currentResident=head;
+            Resident*currentResident=head;
             while(currentResident->next!=nullptr)
             {
                 currentResident=currentResident->next;
@@ -94,14 +100,14 @@ class resident{
 
             //IF INDEX IS 0
             if (index==0){
-                resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
+                Resident* newResident =new Resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
                 newResident->next=head;
                 head=newResident;
                 size++;
                 return;
             }
             //IF INDEX IS WITHIN BOUNDS 
-            resident* current =head;
+            Resident* current =head;
             for (int i =0; i < index -1 && current!=nullptr;i++ )
             {
                 current=current->next;
@@ -110,23 +116,80 @@ class resident{
                 cout<<"Index is out of bounds\n";
                 return;
             }
-            resident* newResident =new resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
+            Resident* newResident =new Resident{ID,resage,resmodeOfTransport,resdailyDistance,rescarbonEmissionFactor,resaverageDayPerMonth,nullptr};
             newResident->next=current->next;
             current->next=newResident;
             size++;
         }
+        //Clear method
         void clear ()
         {
             while (head!=nullptr){
-                resident* current=head;
+                Resident* current=head;
                 head=head->next;
                 delete current;
             }
             size=0;
         }
-        
-        void loadFromCSV(string filename){
-            ifstream file(filename);
+    //Deletion Methods
+        void deleteAtBeginning()
+        {
+            if (head==nullptr){
+                cout<<"The list is already empty";
+                return;
+            }
+            Resident *temp=head;
+            head=head->next;
+            delete temp;
+            size--;
+        }
+
+        void deleteAtEnd (){
+            Resident* current=head;
+            Resident*temp=head;
+            if (head==nullptr)
+            {
+                cout<<"This list is already empty\n";
+                return;
+            }
+            
+            if (head->next==nullptr)
+            {  
+                head=head->next;
+                delete temp;
+                cout<<"Single element was deleted\n";
+                size--;
+                return;
+            }
+            
+            while(current->next->next!=nullptr)
+            {
+                current=current->next; 
+            }
+            temp=current->next;
+            delete temp;
+            current->next=nullptr;
+            size--;
+        }
+        };
+        class FileManager{
+            //Class to handle all the file logic
+            private:
+            ResidentList* resList;
+            public:
+            void SetResidentList(ResidentList*resList){
+                this->resList=resList;
+            }
+            ResidentList *GetResidentList(){
+                return resList;
+            }
+
+            //Overloaded constructor 
+            FileManager(){}
+            
+            //Method to load from CSV
+            void loadFromCSV(string datafile){
+            ifstream file(datafile);
             if (!file.is_open()){
                 cout<<"Error opening file\n";
                 return;
@@ -140,7 +203,6 @@ class resident{
             stringstream ss(line);
             string ID, ageStr,transport, distanceStr,factorStr,daysStr;
 
-
             // Split using commas
             getline(ss, ID, ',');
             getline(ss, ageStr, ',');
@@ -149,28 +211,98 @@ class resident{
             getline(ss, factorStr, ',');
             getline(ss, daysStr);
 
-            //convert the data types
+            //convert the data types using the string libraty st function 
             int age = stoi(ageStr);
             int distance = stoi(distanceStr);
             double factor = stod(factorStr);
             int days = stoi(daysStr);
-            insertAtEnd(ID,age,transport,distance,factor, days);
+            resList->insertAtEnd(ID,age,transport,distance,factor, days);
         }
             file.close();
         }
-
         };
 
-       
+        class computation {
+            //Class to handle all computations 
+            public:
+            Resident *link=nullptr;
+            FileManager* load;
+
+            //Constructor Overload
+            computation (FileManager* fm){
+                this->load =  fm;
+            }// making sure it takes the list from file manager
+
+            double computeEmission(Resident * res){ //Function to calculate emissions for a specified node
+                if(res==nullptr){
+                    cout<<"The list is empty no value"<<endl;
+                    return 0;
+                }
+                    double emission=res->averageDayPerMonth*
+                                    res->dailyDistance*
+                                    res->carbonEmissionFactor;
+                return emission;
+            }
+
+            //Method below calculates the total emisiion, 
+            double computeTotalEmission(){
+                double totalEmission=0;;
+                double product=0;
+
+                ResidentList* list=load->GetResidentList(); //get the list 
+                link=list->GetHead();   //assign link to the head of the list
+                if(link==nullptr){
+                    cout<<"The list is empty no value"<<endl;
+                    return 0;
+                }
+                while(link!=nullptr)    //Traverse the list and accumulate the values 
+                {   
+                    product=computeEmission(link); //calls the emmission function 
+                    totalEmission+=product;
+                    link=link->next; 
+                }
+                return totalEmission;
+            }
+        };
+ 
 int main(){
 
-    cout<<"Linked Lists version for demo\n";
-    ResidentList resList; //stack 
- 
-    resList.loadFromCSV("../../data/dataset1-cityA.csv");
-    resList.loadFromCSV("../../data/dataset2-cityB.csv");
-    resList.loadFromCSV("../../data/dataset3-cityC.csv");
-    resList.traversePrint();
-    cout << filesystem::current_path() << endl;
+    cout<<"============================================================================================\n";
+    cout<<"-------The following is an Implementation of linked lists for DSTR PART 1-------\n";
+    cout<<"============================================================================================\n";
+    
+    ResidentList listA, listB, listC; // make lists for each city
+    FileManager fmcityA, fmcityB, fmcityC;  //both are on stack
+    fmcityA.SetResidentList(&listA); 
+    fmcityB.SetResidentList(&listB);
+    fmcityC.SetResidentList(&listC);
+    
+    fmcityA.loadFromCSV("../../data/dataset1-cityA.csv");
+    fmcityB.loadFromCSV("../../data/dataset2-cityB.csv");   //load using the function for load csv
+    fmcityC.loadFromCSV("../../data/dataset3-cityC.csv"); 
+    
+    cout<<"============================================================================================\n";
+    cout<<"City A data\n";
+    cout<<"============================================================================================\n";
+    listA.traversePrint();  //Print the list with traversal
+
+    cout<<"============================================================================================\n";
+    cout<<"City B data\n";
+    cout<<"============================================================================================\n";
+    listB.traversePrint();  //Print the list with traversal
+
+    cout<<"============================================================================================\n";
+    cout<<"City C data\n";
+    cout<<"============================================================================================\n";
+    listC.traversePrint();  //Print the list with traversal
+    
+    computation computeA(&fmcityA);
+    computation computeB(&fmcityB); //compute objects
+    computation computeC(&fmcityC); 
+
+    cout<<"Total emission for City A: "<<computeA.computeTotalEmission()<<endl;;
+    cout<<"Total emission City B: "<<computeB.computeTotalEmission()<<endl;;    //Print the total emissions for each city
+    cout<<"Total emission City C: "<<computeC.computeTotalEmission()<<endl;;
+
     return 0;
 }
