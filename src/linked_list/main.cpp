@@ -4,6 +4,9 @@ using namespace std;
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <iomanip>
+#include <chrono>
+
 class Resident{
     //This class holds the values that a resident must have
     public:
@@ -265,6 +268,163 @@ class Resident{
             }
         };
  
+//Contains Bubble Sort, Linear search and Binary search on Linked Listss.
+class SortSearch {
+    private:
+        ResidentList* list;
+        computation* comp;
+    
+        void swapData(Resident* a, Resident* b) {
+            swap(a->residentID, b->residentID);
+            swap(a->age, b->age);
+            swap(a->modeOfTransport, b->modeOfTransport);
+            swap(a->dailyDistance, b->dailyDistance);
+            swap(a->carbonEmissionFactor, b->carbonEmissionFactor);
+            swap(a->averageDayPerMonth, b->averageDayPerMonth);
+        }
+        //Getting Memory Size for each
+        size_t getMemoryUsage() {
+            return list->getSize() * sizeof(Resident);
+        }
+
+    public:
+        SortSearch(ResidentList* resList, computation* comp) {
+            this->list = resList;
+            this->comp = comp;
+        }
+        //Implementation of Bubble Sort
+        void bubbleSort(string sortBy = "age", string order = "asc") {
+            auto start = chrono::high_resolution_clock::now();
+            Resident* last = nullptr;
+            bool swapped;
+            do {
+                swapped = false;
+                Resident* cur = list->GetHead();
+                while (cur->next != last) {
+                    Resident* nxt = cur->next;
+                    bool doSwap = false;
+                    if (sortBy == "age")
+                        doSwap = (order == "asc") ? cur->age > nxt->age : cur->age < nxt->age;
+                    else if (sortBy == "distance")
+                        doSwap = (order == "asc") ? cur->dailyDistance > nxt->dailyDistance : cur->dailyDistance < nxt->dailyDistance;
+                    else if (sortBy == "emission")
+                        doSwap = (order == "asc") ? comp->computeEmission(cur) > comp->computeEmission(nxt) : comp->computeEmission(cur) < comp->computeEmission(nxt);
+                    if (doSwap) { swapData(cur, nxt); swapped = true; }
+                    cur = cur->next;
+                }
+                last = cur;
+            } while (swapped);
+            auto end = chrono::high_resolution_clock::now();
+            cout << "\n[Bubble Sort] By: " << sortBy << " | " << order << " | Time: " << chrono::duration<double, milli>(end - start).count() << " ms | O(n^2)\n";
+            cout << "Memory Usage: " << getMemoryUsage() << " bytes\n";
+        }
+        
+        // Implementation of Linear Search
+        void linearSearch(string searchBy, string value) {
+            auto start = chrono::high_resolution_clock::now();
+            Resident* cur = list->GetHead();
+            int found = 0;
+            cout << "\n[Linear Search] " << searchBy << " = " << value << "\n";
+            cout << left << setw(12)<<"ID" << setw(6)<<"Age" << setw(12)<<"Transport" << setw(10)<<"Distance" << setw(8)<<"Days" << setw(12)<<"Emission\n";
+            cout << string(60, '-') << "\n";
+            while (cur != nullptr) {
+                bool match = false;
+                if (searchBy == "transport") {
+                    string a = cur->modeOfTransport, b = value;
+                    for (char& c : a) c = tolower(c);
+                    for (char& c : b) c = tolower(c);
+                    match = (a == b);
+                } else if (searchBy == "age_group") {
+                    int dash = value.find('-');
+                    match = cur->age >= stoi(value.substr(0, dash)) && cur->age <= stoi(value.substr(dash + 1));
+                } else if (searchBy == "distance_above") {
+                    match = cur->dailyDistance > stoi(value);
+                } else if (searchBy == "distance_below") {
+                    match = cur->dailyDistance < stoi(value);
+                }
+                if (match) {
+                    cout << left << setw(12)<<cur->residentID << setw(6)<<cur->age << setw(12)<<cur->modeOfTransport << setw(10)<<cur->dailyDistance << setw(8)<<cur->averageDayPerMonth << setw(12)<<comp->computeEmission(cur) << "\n";
+                    found++;
+                }
+                cur = cur->next;
+            }
+            auto end = chrono::high_resolution_clock::now();
+            cout << string(60, '-') << "\n";
+            cout << "Found: " << found << " | Time: " << chrono::duration<double, milli>(end - start).count() << " ms | O(n)\n";
+            cout << "Memory Usage: " << getMemoryUsage() << " bytes\n";
+        }
+
+        //Implementation of Binary Search
+        void binarySearch(string searchBy, string value) {
+            auto start = chrono::high_resolution_clock::now();
+            int n = list->getSize();
+            Resident** arr = new Resident*[n];
+            Resident* cur = list->GetHead();
+            for (int i = 0; i < n; i++) { arr[i] = cur; cur = cur->next; }
+
+            // Sort temp array by relevant field
+            for (int i = 0; i < n - 1; i++) {
+                for (int j = 0; j < n - i - 1; j++) {
+                    bool doSwap = false;
+                    if (searchBy == "age_group")
+                        doSwap = arr[j]->age > arr[j+1]->age;
+                    else if (searchBy == "transport") {
+                        string a = arr[j]->modeOfTransport, b = arr[j+1]->modeOfTransport;
+                        for (char& c : a) c = tolower(c);
+                        for (char& c : b) c = tolower(c);
+                        doSwap = a > b;
+                    } else
+                        doSwap = arr[j]->dailyDistance > arr[j+1]->dailyDistance;
+                    if (doSwap) swap(arr[j], arr[j+1]);
+                }
+            }
+
+            int found = 0, lo = 0, hi = n - 1, mid, startIdx = -1;
+            cout << "\n[Binary Search] " << searchBy << " = " << value << "\n";
+            cout << left << setw(12)<<"ID" << setw(6)<<"Age" << setw(12)<<"Transport" << setw(10)<<"Distance" << setw(8)<<"Days" << setw(12)<<"Emission\n";
+            cout << string(60, '-') << "\n";
+
+            if (searchBy == "age_group") {
+                int dash = value.find('-'), minAge = stoi(value.substr(0, dash)), maxAge = stoi(value.substr(dash + 1));
+                while (lo <= hi) { mid = lo + (hi-lo)/2; if (arr[mid]->age >= minAge) { startIdx = mid; hi = mid-1; } else lo = mid+1; }
+                if (startIdx != -1)
+                    for (int i = startIdx; i < n && arr[i]->age <= maxAge; i++, found++)
+                        cout << left << setw(12)<<arr[i]->residentID << setw(6)<<arr[i]->age << setw(12)<<arr[i]->modeOfTransport << setw(10)<<arr[i]->dailyDistance << setw(8)<<arr[i]->averageDayPerMonth << setw(12)<<comp->computeEmission(arr[i]) << "\n";
+
+            } else if (searchBy == "transport") {
+                string val = value; for (char& c : val) c = tolower(c);
+                while (lo <= hi) { mid = lo+(hi-lo)/2; string m = arr[mid]->modeOfTransport; for (char& c : m) c = tolower(c); if (m == val) { startIdx = mid; break; } else if (m < val) lo = mid+1; else hi = mid-1; }
+                if (startIdx != -1) {
+                    int l = startIdx, r = startIdx;
+                    auto toLow = [](string s) { for (char& c : s) c = tolower(c); return s; };
+                    while (l > 0   && toLow(arr[l-1]->modeOfTransport) == val) l--;
+                    while (r < n-1 && toLow(arr[r+1]->modeOfTransport) == val) r++;
+                    for (int i = l; i <= r; i++, found++)
+                        cout << left << setw(12)<<arr[i]->residentID << setw(6)<<arr[i]->age << setw(12)<<arr[i]->modeOfTransport << setw(10)<<arr[i]->dailyDistance << setw(8)<<arr[i]->averageDayPerMonth << setw(12)<<comp->computeEmission(arr[i]) << "\n";
+                }
+            } else if (searchBy == "distance_above") {
+                int threshold = stoi(value); startIdx = n;
+                while (lo <= hi) { mid = lo+(hi-lo)/2; if (arr[mid]->dailyDistance > threshold) { startIdx = mid; hi = mid-1; } else lo = mid+1; }
+                for (int i = startIdx; i < n; i++, found++)
+                    cout << left << setw(12)<<arr[i]->residentID << setw(6)<<arr[i]->age << setw(12)<<arr[i]->modeOfTransport << setw(10)<<arr[i]->dailyDistance << setw(8)<<arr[i]->averageDayPerMonth << setw(12)<<comp->computeEmission(arr[i]) << "\n";
+
+            } else if (searchBy == "distance_below") {
+                int threshold = stoi(value); startIdx = -1;
+                while (lo <= hi) { mid = lo+(hi-lo)/2; if (arr[mid]->dailyDistance < threshold) { startIdx = mid; lo = mid+1; } else hi = mid-1; }
+                for (int i = 0; i <= startIdx; i++, found++)
+                    cout << left << setw(12)<<arr[i]->residentID << setw(6)<<arr[i]->age << setw(12)<<arr[i]->modeOfTransport << setw(10)<<arr[i]->dailyDistance << setw(8)<<arr[i]->averageDayPerMonth << setw(12)<<comp->computeEmission(arr[i]) << "\n";
+            }
+
+            auto end = chrono::high_resolution_clock::now();
+            cout << string(60, '-') << "\n";
+            cout << "Found: " << found << " | Time: " << chrono::duration<double, milli>(end - start).count() << " ms\n";
+            cout << "Memory Usage (list): " << getMemoryUsage() << " bytes\n";
+            cout << "Memory Usage (temp array): " << n * sizeof(Resident*) << " bytes\n";
+            cout << "O(n) overall on linked list (O(log n) on arrays)\n";
+            delete[] arr;
+        }
+};
+
 int main(){
 
     cout<<"============================================================================================\n";
@@ -303,6 +463,28 @@ int main(){
     cout<<"Total emission for City A: "<<computeA.computeTotalEmission()<<endl;;
     cout<<"Total emission City B: "<<computeB.computeTotalEmission()<<endl;;    //Print the total emissions for each city
     cout<<"Total emission City C: "<<computeC.computeTotalEmission()<<endl;;
+
+    //Creating objects for each city dataset.
+    SortSearch cityA(&listA, &computeA);
+    SortSearch cityB(&listB, &computeB);
+    SortSearch cityC(&listC, &computeC);
+
+    //Sorting
+    cityA.bubbleSort("age", "asc");             //Sorting by age in an assending order
+    cityB.bubbleSort("distance", "desc");       //Sorting by distance in a descending order
+    cityC.bubbleSort("emission", "asc");        //Sorting by emissions in an assending order
+
+    //Performing linear search on dataset based on criterias
+    cityA.linearSearch("transport", "Car");
+    cityB.linearSearch("age_group", "26-45");
+    cityC.linearSearch("distance_above", "15");
+    cityA.linearSearch("distance_below", "10");
+
+    //Performing binary search on databset based on criterias
+    cityA.binarySearch("transport", "Bicycle");
+    cityB.binarySearch("age_group", "18-25");
+    cityC.binarySearch("distance_above", "15");
+    cityC.binarySearch("distance_below", "10");
 
     return 0;
 }
