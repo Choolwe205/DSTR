@@ -297,7 +297,7 @@ class SortSearch {
         }
 
         //Implementation of Bubble Sort.
-        void bubbleSort(string sortBy = "age", string order = "asc") {
+        void bubbleSort(string sortBy = "age", string order = "asc") {      //Default args set to age and asc order.
             auto start = chrono::high_resolution_clock::now();      //Starts timer.
             Resident* last = nullptr;           //Marks boundary for unsorted data.
             bool swapped;
