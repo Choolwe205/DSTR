@@ -6,10 +6,8 @@
 #include <chrono>
 #include <cstring>
 #include <algorithm>
-#include <filesystem>
 
 using namespace std;
-namespace fs = std::filesystem;
 
 // Constants for array sizes
 const int MAX_RESIDENTS = 500;
@@ -194,10 +192,9 @@ public:
     }
     
     bool loadFromCSV(string datafile) {
-        ifstream file(datafile);
+        ifstream file(datafile.c_str());
         if (!file.is_open()) {
             cout << "Error opening file: " << datafile << endl;
-            cout << "Current working directory: " << fs::current_path() << endl;
             return false;
         }
         
@@ -251,7 +248,6 @@ public:
         ResidentArray* arr = load->getResidentArray();
         
         if (arr == nullptr || arr->getSize() == 0) {
-            cout << "The array is empty!" << endl;
             return 0;
         }
         
@@ -502,8 +498,8 @@ public:
             if (searchBy == "transport") {
                 string a = res.modeOfTransport;
                 string b = value;
-                for (char& c : a) c = tolower(c);
-                for (char& c : b) c = tolower(c);
+                for (size_t c = 0; c < a.length(); c++) a[c] = tolower(a[c]);
+                for (size_t c = 0; c < b.length(); c++) b[c] = tolower(b[c]);
                 match = (a == b);
             } else if (searchBy == "age_group") {
                 int dash = value.find('-');
@@ -541,8 +537,8 @@ public:
                 for (int j = 0; j < n - i - 1; j++) {
                     string a = (*arr)[j].modeOfTransport;
                     string b = (*arr)[j + 1].modeOfTransport;
-                    for (char& c : a) c = tolower(c);
-                    for (char& c : b) c = tolower(c);
+                    for (size_t c = 0; c < a.length(); c++) a[c] = tolower(a[c]);
+                    for (size_t c = 0; c < b.length(); c++) b[c] = tolower(b[c]);
                     if (a > b) {
                         swap((*arr)[j], (*arr)[j + 1]);
                     }
@@ -596,7 +592,7 @@ public:
             }
         } else if (searchBy == "transport") {
             string val = value;
-            for (char& c : val) c = tolower(c);
+            for (size_t c = 0; c < val.length(); c++) val[c] = tolower(val[c]);
             
             int left = 0, right = arr->getSize() - 1;
             int foundIndex = -1;
@@ -604,7 +600,7 @@ public:
             while (left <= right) {
                 int mid = left + (right - left) / 2;
                 string midMode = (*arr)[mid].modeOfTransport;
-                for (char& c : midMode) c = tolower(c);
+                for (size_t c = 0; c < midMode.length(); c++) midMode[c] = tolower(midMode[c]);
                 
                 if (midMode == val) {
                     foundIndex = mid;
@@ -618,10 +614,6 @@ public:
             
             if (foundIndex != -1) {
                 int l = foundIndex, r = foundIndex;
-                auto toLower = [](string s) { for (char& c : s) c = tolower(c); return s; };
-                while (l > 0 && toLower((*arr)[l - 1].modeOfTransport) == val) l--;
-                while (r < arr->getSize() - 1 && toLower((*arr)[r + 1].modeOfTransport) == val) r++;
-                
                 for (int i = l; i <= r; i++) {
                     Resident& res = (*arr)[i];
                     cout << left << setw(12) << res.residentID << setw(6) << res.age 
@@ -685,54 +677,12 @@ public:
              << chrono::duration<double, milli>(end - start).count() << " ms\n";
         cout << "Memory Usage (array): " << getMemoryUsage() << " bytes\n";
     }
-    
-    void displaySorted() {
-        arr->traversePrint();
-    }
 };
-
-// Function to attempt finding CSV files in common locations
-string findCSVFile(const string& filename) {
-    // List of possible paths to check
-    vector<string> paths = {
-        filename,                                    // Current directory
-        "./" + filename,                            // Current directory explicit
-        "../" + filename,                           // Parent directory
-        "../../" + filename,                        // Two levels up
-        "../../data/" + filename,                   // Data subdirectory
-        "../data/" + filename,                      // Data in parent
-        "./data/" + filename,                       // Data in current
-        "/mnt/c/Users/ASUS/OneDrive/Desktop/Assignment 1/" + filename  // Absolute path from your error
-    };
-    
-    for (const auto& path : paths) {
-        ifstream test(path);
-        if (test.is_open()) {
-            test.close();
-            return path;
-        }
-    }
-    return filename; // Return original if not found
-}
 
 int main() {
     cout << "============================================================================================\n";
     cout << "-------The following is an Implementation of Arrays for DSTR PART 1-------\n";
-    cout << "============================================================================================\n";
-    
-    // Display current working directory for debugging
-    cout << "\nCurrent working directory: " << fs::current_path() << endl;
-    cout << "\nAttempting to locate CSV files...\n" << endl;
-    
-    // Find the correct file paths
-    string fileA = findCSVFile("dataset1-cityA.csv");
-    string fileB = findCSVFile("dataset2-cityB.csv");
-    string fileC = findCSVFile("dataset3-cityC.csv");
-    
-    cout << "Using file paths:" << endl;
-    cout << "  City A: " << fileA << endl;
-    cout << "  City B: " << fileB << endl;
-    cout << "  City C: " << fileC << endl << endl;
+    cout << "============================================================================================\n\n";
     
     // Create arrays for each city
     ResidentArray arrayA, arrayB, arrayC;
@@ -743,19 +693,29 @@ int main() {
     fmB.setResidentArray(&arrayB);
     fmC.setResidentArray(&arrayC);
     
-    // Load data from CSV files
-    bool loadA = fmA.loadFromCSV(fileA);
-    bool loadB = fmB.loadFromCSV(fileB);
-    bool loadC = fmC.loadFromCSV(fileC);
+    // Load data from CSV files - UPDATE THESE PATHS TO MATCH YOUR SYSTEM
+    // Option 1: If CSV files are in the same directory as the executable
+    bool loadA = fmA.loadFromCSV("dataset1-cityA.csv");
+    bool loadB = fmB.loadFromCSV("dataset2-cityB.csv");
+    bool loadC = fmC.loadFromCSV("dataset3-cityC.csv");
+    
+    // Option 2: If using full Windows paths (uncomment and use your actual path)
+    // bool loadA = fmA.loadFromCSV("C:\\Users\\Rakin\\Documents\\GitHub\\DSTR\\src\\array\\dataset1-cityA.csv");
+    // bool loadB = fmB.loadFromCSV("C:\\Users\\Rakin\\Documents\\GitHub\\DSTR\\src\\array\\dataset2-cityB.csv");
+    // bool loadC = fmC.loadFromCSV("C:\\Users\\Rakin\\Documents\\GitHub\\DSTR\\src\\array\\dataset3-cityC.csv");
     
     if (!loadA && !loadB && !loadC) {
         cout << "\nERROR: Could not find any CSV files!" << endl;
         cout << "Please ensure the CSV files are in the same directory as the executable." << endl;
-        cout << "Or update the file paths in the findCSVFile() function." << endl;
+        cout << "Current directory: " << __FILE__ << endl;
+        cout << "\nPlace the following files in the same folder as array_program.exe:" << endl;
+        cout << "  - dataset1-cityA.csv" << endl;
+        cout << "  - dataset2-cityB.csv" << endl;
+        cout << "  - dataset3-cityC.csv" << endl;
         return 1;
     }
     
-    // Display loaded data only if files were found
+    // Display loaded data
     if (loadA) {
         cout << "\n============================================================================================\n";
         cout << "City A Data (" << arrayA.getSize() << " residents)\n";
@@ -777,7 +737,7 @@ int main() {
         arrayC.traversePrint();
     }
     
-    // Create computation objects only for loaded data
+    // Create computation objects
     ComputationArray compA(&fmA);
     ComputationArray compB(&fmB);
     ComputationArray compC(&fmC);
@@ -790,7 +750,7 @@ int main() {
     if (loadB) cout << "Total emission for City B: " << fixed << setprecision(2) << compB.computeTotalEmission() << " kg CO2" << endl;
     if (loadC) cout << "Total emission for City C: " << fixed << setprecision(2) << compC.computeTotalEmission() << " kg CO2" << endl;
     
-    // Calculate emissions by mode for each city
+    // Calculate emissions by mode
     if (loadA) {
         cout << "\n============================================================================================\n";
         cout << "City A - Emissions by Mode\n";
@@ -812,7 +772,7 @@ int main() {
         compC.calculateEmissionsByMode();
     }
     
-    // Calculate emissions by age group for each city
+    // Calculate emissions by age group
     if (loadA) {
         cout << "\n============================================================================================\n";
         cout << "City A - Emissions by Age Group\n";
@@ -834,7 +794,7 @@ int main() {
         compC.calculateEmissionsByAgeGroup();
     }
     
-    // Create sort/search objects only for loaded data
+    // Sorting and searching experiments
     if (loadA || loadB || loadC) {
         cout << "\n============================================================================================\n";
         cout << "SORTING EXPERIMENTS\n";
@@ -842,4 +802,95 @@ int main() {
         
         if (loadA) {
             SortSearchArray ssaA(&arrayA, &compA);
-            ssaA.bubbleSort("age",
+            ssaA.bubbleSort("age", "asc");
+        }
+        if (loadB) {
+            SortSearchArray ssaB(&arrayB, &compB);
+            ssaB.bubbleSort("distance", "desc");
+        }
+        if (loadC) {
+            SortSearchArray ssaC(&arrayC, &compC);
+            ssaC.bubbleSort("emission", "asc");
+        }
+        
+        cout << "\n--- Additional Sorting Algorithm for Comparison ---\n";
+        
+        // Reload data for fair comparison
+        if (loadA) {
+            arrayA.clear();
+            fmA.loadFromCSV("dataset1-cityA.csv");
+            SortSearchArray ssaA(&arrayA, &compA);
+            ssaA.selectionSort("age", "asc");
+        }
+        if (loadB) {
+            arrayB.clear();
+            fmB.loadFromCSV("dataset2-cityB.csv");
+            SortSearchArray ssaB(&arrayB, &compB);
+            ssaB.selectionSort("distance", "desc");
+        }
+        if (loadC) {
+            arrayC.clear();
+            fmC.loadFromCSV("dataset3-cityC.csv");
+            SortSearchArray ssaC(&arrayC, &compC);
+            ssaC.selectionSort("emission", "asc");
+        }
+        
+        // Searching experiments
+        cout << "\n============================================================================================\n";
+        cout << "SEARCHING EXPERIMENTS\n";
+        cout << "============================================================================================\n";
+        
+        if (loadA) {
+            SortSearchArray ssaA(&arrayA, &compA);
+            ssaA.linearSearch("transport", "Car");
+            ssaA.linearSearch("distance_below", "10");
+        }
+        if (loadB) {
+            SortSearchArray ssaB(&arrayB, &compB);
+            ssaB.linearSearch("age_group", "26-45");
+        }
+        if (loadC) {
+            SortSearchArray ssaC(&arrayC, &compC);
+            ssaC.linearSearch("distance_above", "15");
+        }
+        
+        cout << "\n--- Binary Search Results (Data will be sorted first) ---\n";
+        
+        if (loadA) {
+            SortSearchArray ssaA(&arrayA, &compA);
+            ssaA.binarySearch("transport", "Bicycle");
+        }
+        if (loadB) {
+            SortSearchArray ssaB(&arrayB, &compB);
+            ssaB.binarySearch("age_group", "18-25");
+        }
+        if (loadC) {
+            SortSearchArray ssaC(&arrayC, &compC);
+            ssaC.binarySearch("distance_above", "15");
+            ssaC.binarySearch("distance_below", "10");
+        }
+    }
+    
+    // Performance summary
+    cout << "\n============================================================================================\n";
+    cout << "PERFORMANCE ANALYSIS SUMMARY - ARRAY IMPLEMENTATION\n";
+    cout << "============================================================================================\n";
+    cout << "Array Characteristics:\n";
+    cout << "  - Contiguous memory allocation\n";
+    cout << "  - O(1) random access via index\n";
+    cout << "  - Fixed capacity (can be resized with reallocation)\n";
+    cout << "  - Cache-friendly due to data locality\n";
+    cout << "\nTime Complexities:\n";
+    cout << "  - Access: O(1)\n";
+    cout << "  - Search (unsorted): O(n)\n";
+    cout << "  - Search (sorted/binary): O(log n)\n";
+    cout << "  - Insertion (end): O(1)\n";
+    cout << "  - Insertion (middle): O(n)\n";
+    cout << "  - Deletion: O(n)\n";
+    cout << "  - Bubble Sort: O(n^2)\n";
+    cout << "  - Selection Sort: O(n^2)\n";
+    cout << "\nSpace Complexity:\n";
+    cout << "  - Memory per resident: " << sizeof(Resident) << " bytes\n";
+    
+    return 0;
+}
