@@ -6,8 +6,10 @@
 #include <chrono>
 #include <cstring>
 #include <algorithm>
+#include <filesystem>
 
 using namespace std;
+namespace fs = std::filesystem;
 
 // Constants for array sizes
 const int MAX_RESIDENTS = 500;
@@ -37,7 +39,6 @@ struct Resident {
     double carbonEmissionFactor;
     int averageDayPerMonth;
     
-    // Default constructor
     Resident() {
         residentID = "";
         age = 0;
@@ -47,7 +48,6 @@ struct Resident {
         averageDayPerMonth = 0;
     }
     
-    // Parameterized constructor
     Resident(string id, int a, string mode, int distance, double factor, int days) {
         residentID = id;
         age = a;
@@ -66,14 +66,12 @@ private:
     int capacity;
     
 public:
-    // Constructor
     ResidentArray(int cap = MAX_RESIDENTS) {
         capacity = cap;
         residents = new Resident[capacity];
         size = 0;
     }
     
-    // Destructor
     ~ResidentArray() {
         delete[] residents;
     }
@@ -102,12 +100,10 @@ public:
         return *this;
     }
     
-    // Accessors
     int getSize() const { return size; }
     int getCapacity() const { return capacity; }
     Resident* getData() const { return residents; }
     
-    // Insert at end
     void insertAtEnd(string id, int age, string mode, int distance, double factor, int days) {
         if (size < capacity) {
             residents[size] = Resident(id, age, mode, distance, factor, days);
@@ -117,7 +113,6 @@ public:
         }
     }
     
-    // Insert at index
     void insertAtIndex(string id, int age, string mode, int distance, double factor, int days, int index) {
         if (index < 0 || index > size) {
             cout << "Index out of bounds!" << endl;
@@ -128,7 +123,6 @@ public:
             return;
         }
         
-        // Shift elements to the right
         for (int i = size; i > index; i--) {
             residents[i] = residents[i - 1];
         }
@@ -137,26 +131,22 @@ public:
         size++;
     }
     
-    // Delete at index
     void deleteAtIndex(int index) {
         if (index < 0 || index >= size) {
             cout << "Index out of bounds!" << endl;
             return;
         }
         
-        // Shift elements to the left
         for (int i = index; i < size - 1; i++) {
             residents[i] = residents[i + 1];
         }
         size--;
     }
     
-    // Clear all residents
     void clear() {
         size = 0;
     }
     
-    // Traverse and print
     void traversePrint() const {
         if (size == 0) {
             cout << "This array is empty" << endl;
@@ -164,21 +154,20 @@ public:
         }
         
         cout << left << setw(12) << "ID" << setw(6) << "Age" << setw(15) << "Transport" 
-             << setw(12) << "Distance" << setw(12) << "Emission Factor" << setw(10) << "Days" << endl;
-        cout << string(67, '-') << endl;
+             << setw(12) << "Distance" << setw(18) << "Emission Factor" << setw(10) << "Days" << endl;
+        cout << string(73, '-') << endl;
         
         for (int i = 0; i < size; i++) {
             cout << left << setw(12) << residents[i].residentID 
                  << setw(6) << residents[i].age
                  << setw(15) << residents[i].modeOfTransport
                  << setw(12) << residents[i].dailyDistance
-                 << setw(12) << residents[i].carbonEmissionFactor
+                 << setw(18) << residents[i].carbonEmissionFactor
                  << setw(10) << residents[i].averageDayPerMonth << endl;
         }
         cout << "--End of Array--" << endl;
     }
     
-    // Access by index
     Resident& operator[](int index) {
         return residents[index];
     }
@@ -204,16 +193,18 @@ public:
         return resArray;
     }
     
-    void loadFromCSV(string datafile) {
+    bool loadFromCSV(string datafile) {
         ifstream file(datafile);
         if (!file.is_open()) {
             cout << "Error opening file: " << datafile << endl;
-            return;
+            cout << "Current working directory: " << fs::current_path() << endl;
+            return false;
         }
         
         string line;
         getline(file, line); // Skip header
         
+        int lineCount = 0;
         while (getline(file, line)) {
             stringstream ss(line);
             string id, ageStr, transport, distanceStr, factorStr, daysStr;
@@ -225,14 +216,21 @@ public:
             getline(ss, factorStr, ',');
             getline(ss, daysStr);
             
-            int age = stoi(ageStr);
-            int distance = stoi(distanceStr);
-            double factor = stod(factorStr);
-            int days = stoi(daysStr);
-            
-            resArray->insertAtEnd(id, age, transport, distance, factor, days);
+            try {
+                int age = stoi(ageStr);
+                int distance = stoi(distanceStr);
+                double factor = stod(factorStr);
+                int days = stoi(daysStr);
+                
+                resArray->insertAtEnd(id, age, transport, distance, factor, days);
+                lineCount++;
+            } catch (const exception& e) {
+                cout << "Error parsing line: " << line << endl;
+            }
         }
         file.close();
+        cout << "Successfully loaded " << lineCount << " records from " << datafile << endl;
+        return true;
     }
 };
 
@@ -263,7 +261,6 @@ public:
         return totalEmission;
     }
     
-    // Get age group index for a given age
     int getAgeGroupIndex(int age) const {
         for (int i = 0; i < MAX_AGE_GROUPS; i++) {
             if (age >= AGE_GROUPS[i].minAge && age <= AGE_GROUPS[i].maxAge) {
@@ -273,19 +270,19 @@ public:
         return -1;
     }
     
-    // Calculate emissions by age group
     void calculateEmissionsByAgeGroup() const {
         ResidentArray* arr = load->getResidentArray();
-        if (arr == nullptr || arr->getSize() == 0) return;
+        if (arr == nullptr || arr->getSize() == 0) {
+            cout << "No data available for age group analysis." << endl;
+            return;
+        }
         
-        // Arrays to store statistics per age group
         int residentCount[MAX_AGE_GROUPS] = {0};
-        int modeCount[MAX_AGE_GROUPS][6] = {0}; // 6 transport modes
+        int modeCount[MAX_AGE_GROUPS][6] = {0};
         double totalEmission[MAX_AGE_GROUPS] = {0};
         
         string transportModes[] = {"Car", "Bus", "Bicycle", "Walking", "School Bus", "Carpool"};
         
-        // Process each resident
         for (int i = 0; i < arr->getSize(); i++) {
             Resident& res = (*arr)[i];
             int ageGroup = getAgeGroupIndex(res.age);
@@ -294,7 +291,6 @@ public:
             residentCount[ageGroup]++;
             totalEmission[ageGroup] += computeEmission(res);
             
-            // Count mode of transport
             for (int m = 0; m < 6; m++) {
                 if (res.modeOfTransport == transportModes[m]) {
                     modeCount[ageGroup][m]++;
@@ -303,16 +299,16 @@ public:
             }
         }
         
-        // Display results
+        bool hasData = false;
         for (int g = 0; g < MAX_AGE_GROUPS; g++) {
             if (residentCount[g] == 0) continue;
+            hasData = true;
             
             cout << "\n" << string(80, '=') << endl;
             cout << "Age Group: " << AGE_GROUPS[g].minAge << "-" << AGE_GROUPS[g].maxAge 
                  << " (" << AGE_GROUPS[g].name << ")" << endl;
             cout << string(80, '=') << endl;
             
-            // Find most preferred mode
             int maxModeIndex = 0;
             for (int m = 1; m < 6; m++) {
                 if (modeCount[g][m] > modeCount[g][maxModeIndex]) {
@@ -322,14 +318,13 @@ public:
             
             cout << "Most preferred mode of transport: " << transportModes[maxModeIndex] 
                  << " (" << modeCount[g][maxModeIndex] << " residents)" << endl;
-            cout << "Total carbon emissions: " << totalEmission[g] << " kg CO2" << endl;
+            cout << "Total carbon emissions: " << fixed << setprecision(2) << totalEmission[g] << " kg CO2" << endl;
             cout << "Average emission per resident: " << totalEmission[g] / residentCount[g] << " kg CO2" << endl;
             
-            // Display per-mode breakdown
-            cout << "\n" << left << setw(15) << "Mode of Transport" 
-                 << setw(10) << "Count" << setw(20) << "Total Emission (kg CO2)" 
-                 << setw(15) << "Average per Resident" << endl;
-            cout << string(60, '-') << endl;
+            cout << "\n" << left << setw(18) << "Mode of Transport" 
+                 << setw(10) << "Count" << setw(22) << "Total Emission (kg CO2)" 
+                 << setw(18) << "Avg per Resident" << endl;
+            cout << string(68, '-') << endl;
             
             for (int m = 0; m < 6; m++) {
                 if (modeCount[g][m] > 0) {
@@ -340,21 +335,27 @@ public:
                             modeEmission += computeEmission(res);
                         }
                     }
-                    cout << left << setw(15) << transportModes[m] 
+                    cout << left << setw(18) << transportModes[m] 
                          << setw(10) << modeCount[g][m]
-                         << setw(20) << modeEmission
-                         << setw(15) << (modeEmission / modeCount[g][m]) << endl;
+                         << setw(22) << fixed << setprecision(2) << modeEmission
+                         << setw(18) << (modeEmission / modeCount[g][m]) << endl;
                 }
             }
-            cout << string(60, '-') << endl;
+            cout << string(68, '-') << endl;
             cout << "Total Emission for Age Group: " << totalEmission[g] << " kg CO2" << endl;
+        }
+        
+        if (!hasData) {
+            cout << "No age group data available." << endl;
         }
     }
     
-    // Calculate emissions by mode of transport
     void calculateEmissionsByMode() const {
         ResidentArray* arr = load->getResidentArray();
-        if (arr == nullptr || arr->getSize() == 0) return;
+        if (arr == nullptr || arr->getSize() == 0) {
+            cout << "No data available for mode analysis." << endl;
+            return;
+        }
         
         string transportModes[] = {"Car", "Bus", "Bicycle", "Walking", "School Bus", "Carpool"};
         int modeCount[6] = {0};
@@ -374,20 +375,20 @@ public:
         cout << "\n" << string(80, '=') << endl;
         cout << "Emissions by Mode of Transport" << endl;
         cout << string(80, '=') << endl;
-        cout << left << setw(15) << "Mode of Transport" 
-             << setw(10) << "Count" << setw(20) << "Total Emission (kg CO2)" 
-             << setw(15) << "Average per Resident" << endl;
-        cout << string(60, '-') << endl;
+        cout << left << setw(18) << "Mode of Transport" 
+             << setw(10) << "Count" << setw(22) << "Total Emission (kg CO2)" 
+             << setw(18) << "Avg per Resident" << endl;
+        cout << string(68, '-') << endl;
         
         for (int m = 0; m < 6; m++) {
             if (modeCount[m] > 0) {
-                cout << left << setw(15) << transportModes[m] 
+                cout << left << setw(18) << transportModes[m] 
                      << setw(10) << modeCount[m]
-                     << setw(20) << modeEmission[m]
-                     << setw(15) << (modeEmission[m] / modeCount[m]) << endl;
+                     << setw(22) << fixed << setprecision(2) << modeEmission[m]
+                     << setw(18) << (modeEmission[m] / modeCount[m]) << endl;
             }
         }
-        cout << string(60, '-') << endl;
+        cout << string(68, '-') << endl;
     }
 };
 
@@ -405,13 +406,16 @@ public:
     SortSearchArray(ResidentArray* residentArr, ComputationArray* computation) 
         : arr(residentArr), comp(computation) {}
     
-    // Bubble Sort implementation
     void bubbleSort(string sortBy = "age", string order = "asc") {
         auto start = chrono::high_resolution_clock::now();
         
         int n = arr->getSize();
-        bool swapped;
+        if (n == 0) {
+            cout << "\n[Bubble Sort] No data to sort." << endl;
+            return;
+        }
         
+        bool swapped;
         for (int i = 0; i < n - 1; i++) {
             swapped = false;
             for (int j = 0; j < n - i - 1; j++) {
@@ -442,11 +446,15 @@ public:
         cout << "Memory Usage: " << getMemoryUsage() << " bytes\n";
     }
     
-    // Selection Sort implementation (additional algorithm for comparison)
     void selectionSort(string sortBy = "age", string order = "asc") {
         auto start = chrono::high_resolution_clock::now();
         
         int n = arr->getSize();
+        if (n == 0) {
+            cout << "\n[Selection Sort] No data to sort." << endl;
+            return;
+        }
+        
         for (int i = 0; i < n - 1; i++) {
             int targetIdx = i;
             for (int j = i + 1; j < n; j++) {
@@ -478,7 +486,6 @@ public:
         cout << "Memory Usage: " << getMemoryUsage() << " bytes\n";
     }
     
-    // Linear Search
     void linearSearch(string searchBy, string value) {
         auto start = chrono::high_resolution_clock::now();
         
@@ -513,7 +520,7 @@ public:
                 cout << left << setw(12) << res.residentID << setw(6) << res.age 
                      << setw(15) << res.modeOfTransport << setw(10) << res.dailyDistance 
                      << setw(8) << res.averageDayPerMonth 
-                     << setw(12) << comp->computeEmission(res) << "\n";
+                     << setw(12) << fixed << setprecision(2) << comp->computeEmission(res) << "\n";
                 found++;
             }
         }
@@ -525,13 +532,10 @@ public:
         cout << "Memory Usage: " << getMemoryUsage() << " bytes\n";
     }
     
-    // Binary Search (requires sorted data)
     void binarySearch(string searchBy, string value) {
-        // First, sort the array by the appropriate field
         if (searchBy == "age_group") {
             bubbleSort("age", "asc");
         } else if (searchBy == "transport") {
-            // Simple bubble sort by transport mode
             int n = arr->getSize();
             for (int i = 0; i < n - 1; i++) {
                 for (int j = 0; j < n - i - 1; j++) {
@@ -556,12 +560,19 @@ public:
              << setw(10) << "Distance" << setw(8) << "Days" << setw(12) << "Emission\n";
         cout << string(63, '-') << "\n";
         
+        if (arr->getSize() == 0) {
+            cout << "No data available for binary search." << endl;
+            auto end = chrono::high_resolution_clock::now();
+            cout << string(63, '-') << "\n";
+            cout << "Found: 0 | Time: " << chrono::duration<double, milli>(end - start).count() << " ms\n";
+            return;
+        }
+        
         if (searchBy == "age_group") {
             int dash = value.find('-');
             int minAge = stoi(value.substr(0, dash));
             int maxAge = stoi(value.substr(dash + 1));
             
-            // Find first index with age >= minAge
             int left = 0, right = arr->getSize() - 1, first = -1;
             while (left <= right) {
                 int mid = left + (right - left) / 2;
@@ -573,14 +584,13 @@ public:
                 }
             }
             
-            // Print all residents within age range
             if (first != -1) {
                 for (int i = first; i < arr->getSize() && (*arr)[i].age <= maxAge; i++) {
                     Resident& res = (*arr)[i];
                     cout << left << setw(12) << res.residentID << setw(6) << res.age 
                          << setw(15) << res.modeOfTransport << setw(10) << res.dailyDistance 
                          << setw(8) << res.averageDayPerMonth 
-                         << setw(12) << comp->computeEmission(res) << "\n";
+                         << setw(12) << fixed << setprecision(2) << comp->computeEmission(res) << "\n";
                     found++;
                 }
             }
@@ -607,7 +617,6 @@ public:
             }
             
             if (foundIndex != -1) {
-                // Expand left and right to get all matches
                 int l = foundIndex, r = foundIndex;
                 auto toLower = [](string s) { for (char& c : s) c = tolower(c); return s; };
                 while (l > 0 && toLower((*arr)[l - 1].modeOfTransport) == val) l--;
@@ -618,7 +627,7 @@ public:
                     cout << left << setw(12) << res.residentID << setw(6) << res.age 
                          << setw(15) << res.modeOfTransport << setw(10) << res.dailyDistance 
                          << setw(8) << res.averageDayPerMonth 
-                         << setw(12) << comp->computeEmission(res) << "\n";
+                         << setw(12) << fixed << setprecision(2) << comp->computeEmission(res) << "\n";
                     found++;
                 }
             }
@@ -642,7 +651,7 @@ public:
                 cout << left << setw(12) << res.residentID << setw(6) << res.age 
                      << setw(15) << res.modeOfTransport << setw(10) << res.dailyDistance 
                      << setw(8) << res.averageDayPerMonth 
-                     << setw(12) << comp->computeEmission(res) << "\n";
+                     << setw(12) << fixed << setprecision(2) << comp->computeEmission(res) << "\n";
                 found++;
             }
         } else if (searchBy == "distance_below") {
@@ -665,7 +674,7 @@ public:
                 cout << left << setw(12) << res.residentID << setw(6) << res.age 
                      << setw(15) << res.modeOfTransport << setw(10) << res.dailyDistance 
                      << setw(8) << res.averageDayPerMonth 
-                     << setw(12) << comp->computeEmission(res) << "\n";
+                     << setw(12) << fixed << setprecision(2) << comp->computeEmission(res) << "\n";
                 found++;
             }
         }
@@ -677,17 +686,53 @@ public:
         cout << "Memory Usage (array): " << getMemoryUsage() << " bytes\n";
     }
     
-    // Display sorted data
     void displaySorted() {
         arr->traversePrint();
     }
 };
 
-// Main function for array implementation
+// Function to attempt finding CSV files in common locations
+string findCSVFile(const string& filename) {
+    // List of possible paths to check
+    vector<string> paths = {
+        filename,                                    // Current directory
+        "./" + filename,                            // Current directory explicit
+        "../" + filename,                           // Parent directory
+        "../../" + filename,                        // Two levels up
+        "../../data/" + filename,                   // Data subdirectory
+        "../data/" + filename,                      // Data in parent
+        "./data/" + filename,                       // Data in current
+        "/mnt/c/Users/ASUS/OneDrive/Desktop/Assignment 1/" + filename  // Absolute path from your error
+    };
+    
+    for (const auto& path : paths) {
+        ifstream test(path);
+        if (test.is_open()) {
+            test.close();
+            return path;
+        }
+    }
+    return filename; // Return original if not found
+}
+
 int main() {
     cout << "============================================================================================\n";
     cout << "-------The following is an Implementation of Arrays for DSTR PART 1-------\n";
     cout << "============================================================================================\n";
+    
+    // Display current working directory for debugging
+    cout << "\nCurrent working directory: " << fs::current_path() << endl;
+    cout << "\nAttempting to locate CSV files...\n" << endl;
+    
+    // Find the correct file paths
+    string fileA = findCSVFile("dataset1-cityA.csv");
+    string fileB = findCSVFile("dataset2-cityB.csv");
+    string fileC = findCSVFile("dataset3-cityC.csv");
+    
+    cout << "Using file paths:" << endl;
+    cout << "  City A: " << fileA << endl;
+    cout << "  City B: " << fileB << endl;
+    cout << "  City C: " << fileC << endl << endl;
     
     // Create arrays for each city
     ResidentArray arrayA, arrayB, arrayC;
@@ -699,28 +744,40 @@ int main() {
     fmC.setResidentArray(&arrayC);
     
     // Load data from CSV files
-    // Update file paths as needed
-    fmA.loadFromCSV("dataset1-cityA.csv");
-    fmB.loadFromCSV("dataset2-cityB.csv");
-    fmC.loadFromCSV("dataset3-cityC.csv");
+    bool loadA = fmA.loadFromCSV(fileA);
+    bool loadB = fmB.loadFromCSV(fileB);
+    bool loadC = fmC.loadFromCSV(fileC);
     
-    // Display loaded data
-    cout << "\n============================================================================================\n";
-    cout << "City A Data (" << arrayA.getSize() << " residents)\n";
-    cout << "============================================================================================\n";
-    arrayA.traversePrint();
+    if (!loadA && !loadB && !loadC) {
+        cout << "\nERROR: Could not find any CSV files!" << endl;
+        cout << "Please ensure the CSV files are in the same directory as the executable." << endl;
+        cout << "Or update the file paths in the findCSVFile() function." << endl;
+        return 1;
+    }
     
-    cout << "\n============================================================================================\n";
-    cout << "City B Data (" << arrayB.getSize() << " residents)\n";
-    cout << "============================================================================================\n";
-    arrayB.traversePrint();
+    // Display loaded data only if files were found
+    if (loadA) {
+        cout << "\n============================================================================================\n";
+        cout << "City A Data (" << arrayA.getSize() << " residents)\n";
+        cout << "============================================================================================\n";
+        arrayA.traversePrint();
+    }
     
-    cout << "\n============================================================================================\n";
-    cout << "City C Data (" << arrayC.getSize() << " residents)\n";
-    cout << "============================================================================================\n";
-    arrayC.traversePrint();
+    if (loadB) {
+        cout << "\n============================================================================================\n";
+        cout << "City B Data (" << arrayB.getSize() << " residents)\n";
+        cout << "============================================================================================\n";
+        arrayB.traversePrint();
+    }
     
-    // Create computation objects
+    if (loadC) {
+        cout << "\n============================================================================================\n";
+        cout << "City C Data (" << arrayC.getSize() << " residents)\n";
+        cout << "============================================================================================\n";
+        arrayC.traversePrint();
+    }
+    
+    // Create computation objects only for loaded data
     ComputationArray compA(&fmA);
     ComputationArray compB(&fmB);
     ComputationArray compC(&fmC);
@@ -729,108 +786,60 @@ int main() {
     cout << "\n============================================================================================\n";
     cout << "Total Carbon Emissions by City\n";
     cout << "============================================================================================\n";
-    cout << "Total emission for City A: " << compA.computeTotalEmission() << " kg CO2" << endl;
-    cout << "Total emission for City B: " << compB.computeTotalEmission() << " kg CO2" << endl;
-    cout << "Total emission for City C: " << compC.computeTotalEmission() << " kg CO2" << endl;
+    if (loadA) cout << "Total emission for City A: " << fixed << setprecision(2) << compA.computeTotalEmission() << " kg CO2" << endl;
+    if (loadB) cout << "Total emission for City B: " << fixed << setprecision(2) << compB.computeTotalEmission() << " kg CO2" << endl;
+    if (loadC) cout << "Total emission for City C: " << fixed << setprecision(2) << compC.computeTotalEmission() << " kg CO2" << endl;
     
     // Calculate emissions by mode for each city
-    cout << "\n============================================================================================\n";
-    cout << "City A - Emissions by Mode\n";
-    cout << "============================================================================================\n";
-    compA.calculateEmissionsByMode();
+    if (loadA) {
+        cout << "\n============================================================================================\n";
+        cout << "City A - Emissions by Mode\n";
+        cout << "============================================================================================\n";
+        compA.calculateEmissionsByMode();
+    }
     
-    cout << "\n============================================================================================\n";
-    cout << "City B - Emissions by Mode\n";
-    cout << "============================================================================================\n";
-    compB.calculateEmissionsByMode();
+    if (loadB) {
+        cout << "\n============================================================================================\n";
+        cout << "City B - Emissions by Mode\n";
+        cout << "============================================================================================\n";
+        compB.calculateEmissionsByMode();
+    }
     
-    cout << "\n============================================================================================\n";
-    cout << "City C - Emissions by Mode\n";
-    cout << "============================================================================================\n";
-    compC.calculateEmissionsByMode();
+    if (loadC) {
+        cout << "\n============================================================================================\n";
+        cout << "City C - Emissions by Mode\n";
+        cout << "============================================================================================\n";
+        compC.calculateEmissionsByMode();
+    }
     
     // Calculate emissions by age group for each city
-    cout << "\n============================================================================================\n";
-    cout << "City A - Emissions by Age Group\n";
-    cout << "============================================================================================\n";
-    compA.calculateEmissionsByAgeGroup();
+    if (loadA) {
+        cout << "\n============================================================================================\n";
+        cout << "City A - Emissions by Age Group\n";
+        cout << "============================================================================================\n";
+        compA.calculateEmissionsByAgeGroup();
+    }
     
-    cout << "\n============================================================================================\n";
-    cout << "City B - Emissions by Age Group\n";
-    cout << "============================================================================================\n";
-    compB.calculateEmissionsByAgeGroup();
+    if (loadB) {
+        cout << "\n============================================================================================\n";
+        cout << "City B - Emissions by Age Group\n";
+        cout << "============================================================================================\n";
+        compB.calculateEmissionsByAgeGroup();
+    }
     
-    cout << "\n============================================================================================\n";
-    cout << "City C - Emissions by Age Group\n";
-    cout << "============================================================================================\n";
-    compC.calculateEmissionsByAgeGroup();
+    if (loadC) {
+        cout << "\n============================================================================================\n";
+        cout << "City C - Emissions by Age Group\n";
+        cout << "============================================================================================\n";
+        compC.calculateEmissionsByAgeGroup();
+    }
     
-    // Create sort/search objects
-    SortSearchArray ssaA(&arrayA, &compA);
-    SortSearchArray ssaB(&arrayB, &compB);
-    SortSearchArray ssaC(&arrayC, &compC);
-    
-    // Sorting experiments
-    cout << "\n============================================================================================\n";
-    cout << "SORTING EXPERIMENTS\n";
-    cout << "============================================================================================\n";
-    
-    ssaA.bubbleSort("age", "asc");
-    ssaB.bubbleSort("distance", "desc");
-    ssaC.bubbleSort("emission", "asc");
-    
-    // Additional sorting algorithm for comparison
-    cout << "\n--- Additional Sorting Algorithm for Comparison ---\n";
-    // Reload data for fair comparison
-    arrayA.clear();
-    arrayB.clear();
-    arrayC.clear();
-    fmA.loadFromCSV("dataset1-cityA.csv");
-    fmB.loadFromCSV("dataset2-cityB.csv");
-    fmC.loadFromCSV("dataset3-cityC.csv");
-    
-    ssaA.selectionSort("age", "asc");
-    ssaB.selectionSort("distance", "desc");
-    ssaC.selectionSort("emission", "asc");
-    
-    // Searching experiments
-    cout << "\n============================================================================================\n";
-    cout << "SEARCHING EXPERIMENTS\n";
-    cout << "============================================================================================\n";
-    
-    // Linear searches
-    ssaA.linearSearch("transport", "Car");
-    ssaB.linearSearch("age_group", "26-45");
-    ssaC.linearSearch("distance_above", "15");
-    ssaA.linearSearch("distance_below", "10");
-    
-    // Binary searches (will sort data first)
-    cout << "\n--- Binary Search Results (Data will be sorted first) ---\n";
-    ssaA.binarySearch("transport", "Bicycle");
-    ssaB.binarySearch("age_group", "18-25");
-    ssaC.binarySearch("distance_above", "15");
-    ssaC.binarySearch("distance_below", "10");
-    
-    // Performance summary
-    cout << "\n============================================================================================\n";
-    cout << "PERFORMANCE ANALYSIS SUMMARY - ARRAY IMPLEMENTATION\n";
-    cout << "============================================================================================\n";
-    cout << "Array Characteristics:\n";
-    cout << "  - Contiguous memory allocation\n";
-    cout << "  - O(1) random access via index\n";
-    cout << "  - Fixed capacity (can be resized with reallocation)\n";
-    cout << "  - Cache-friendly due to data locality\n";
-    cout << "\nTime Complexities:\n";
-    cout << "  - Access: O(1)\n";
-    cout << "  - Search (unsorted): O(n)\n";
-    cout << "  - Search (sorted/binary): O(log n)\n";
-    cout << "  - Insertion (end): O(1)\n";
-    cout << "  - Insertion (middle): O(n)\n";
-    cout << "  - Deletion: O(n)\n";
-    cout << "  - Bubble Sort: O(n²)\n";
-    cout << "  - Selection Sort: O(n²)\n";
-    cout << "\nSpace Complexity:\n";
-    cout << "  - Memory per resident: " << sizeof(Resident) << " bytes\n";
-    
-    return 0;
-}
+    // Create sort/search objects only for loaded data
+    if (loadA || loadB || loadC) {
+        cout << "\n============================================================================================\n";
+        cout << "SORTING EXPERIMENTS\n";
+        cout << "============================================================================================\n";
+        
+        if (loadA) {
+            SortSearchArray ssaA(&arrayA, &compA);
+            ssaA.bubbleSort("age",
