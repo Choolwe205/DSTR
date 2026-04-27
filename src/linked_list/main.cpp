@@ -7,6 +7,7 @@ using namespace std;
 #include <iomanip>
 #include <chrono>
 
+
 class Resident{
     //This class holds the values that a resident must have
     public:
@@ -665,10 +666,12 @@ int main(){
     
     ResidentList listA, listB, listC; // make lists for each city
     FileManager fmcityA, fmcityB, fmcityC;  //both are on stack
+    //Make the Lists from each data set 
     fmcityA.SetResidentList(&listA); 
     fmcityB.SetResidentList(&listB);
     fmcityC.SetResidentList(&listC);
     
+    //Load from the data set
     fmcityA.loadFromCSV("../../data/dataset1-cityA.csv");
     fmcityB.loadFromCSV("../../data/dataset2-cityB.csv");   //load using the function for load csv
     fmcityC.loadFromCSV("../../data/dataset3-cityC.csv"); 
