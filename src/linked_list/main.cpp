@@ -7,6 +7,7 @@ using namespace std;
 #include <iomanip>
 #include <chrono>
 
+
 class Resident{
     //This class holds the values that a resident must have
     public:
@@ -266,7 +267,151 @@ class Resident{
                 }
                 return totalEmission;
             }
-        };
+
+            //Categorisation for age groups (idk where to place for now)
+            string getAgeGroup(int age) {
+                if (age >= 6 && age <= 17) return "6-17 (Children & Teens)";
+                if (age >= 18 && age <= 25) return "18-25 (University Students & Young Adults)";
+                if (age >= 26 && age <= 45) return "26-45 (Working Adults Early Career)";
+                if (age >= 46 && age <= 60) return "46-60 (Working Adults Late Career)";
+                if (age >= 61 && age <= 100) return "61-100 (Senior Citizens & Retirees)";
+                return "Error.";
+            }
+
+            // Method to analyze by age group
+            void analyzeByAgeGroup(){
+
+                string groups[] = { //age group labels in order
+                    "6-17 (Children & Teens)",
+                    "18-25 (University Students & Young Adults)",
+                    "26-45 (Working Adults Early Career)",
+                    "46-60 (Working Adults Late Career)",
+                    "61-100 (Senior Citizens & Retirees)"
+                };
+                int numGroups = 5;
+
+                // transport methods
+                string modes[] = {"Car", "Bus", "Bicycle", "Walking", "School Bus", "Carpool"};
+                int numModes = 6;
+
+                ResidentList* list = load->GetResidentList();
+                Resident* cur = list->GetHead();
+
+                // accumulators
+                double totalEmission[5] = {0};
+                int count[5] = {0};
+                int modeCounts[5][6] = {}; // [group][mode]
+
+                while (cur != nullptr) {
+                    string g = getAgeGroup(cur->age);
+                    int gi = -1;
+                    for (int i = 0; i < numGroups; i++)
+                        if (groups[i] == g) { gi = i; break; }
+                
+                    if (gi != -1) {
+                        double em = computeEmission(cur);
+                        totalEmission[gi] += em;
+                        count[gi]++;
+
+                        for (int m = 0; m < numModes; m++)
+                            if (cur->modeOfTransport == modes[m]) { modeCounts[gi][m]++; break; }
+                    }
+                    cur = cur->next;
+                }
+
+                cout << "\n" << string(65, '=') << "\n";
+                cout << "  Age Group Categorization Analysis\n";
+                cout << string(65, '=') << "\n";
+
+                for (int i = 0; i < numGroups; i++) {
+                    if (count[i] == 0) continue;
+
+                    // analysis for most preferred transport
+                    int maxIdx = 0;
+                    for (int m = 1; m < numModes; m++)
+                        if (modeCounts[i][m] > modeCounts[i][maxIdx]) maxIdx = m;
+
+                    double avg = totalEmission[i] / count[i];
+
+                    cout << "\nAge Group: " << groups[i] << "\n";
+                    cout << string(65, '-') << "\n";
+                    cout << left << setw(20) << "Mode of Transportation"
+                         << setw(10) << "Count"
+                         << setw(22) << "Total mission"
+                         << "Average per Resident\n";
+                    cout << string(65, '-') << "\n";
+
+                    for (int m = 0; m < numModes; m++) {
+                        if (modeCounts[i][m] == 0) continue;
+                        double modeEmission = (double)modeCounts[i][m] / count[i] * totalEmission[i];
+                        double modeAvg = modeEmission / modeCounts[i][m];
+                        cout << left << setw(20) << modes[m]
+                             << setw(10) << modeCounts[i][m]
+                             << setw(22) << fixed << setprecision(2) << modeEmission
+                             << fixed << setprecision(2) << modeAvg
+                             << "\n";
+                    }
+
+                    cout << string(65, '-') << "\n";
+                    cout << "Most preferred method of transport : " << modes[maxIdx] << "\n";
+                    cout << "Total emissions                    : " << fixed << setprecision(2) << totalEmission[i] << " kg CO2\n";
+                    cout << "Average emission                   : " << fixed << setprecision(2) << avg << " kg CO2/resident\n";
+                    cout << "Residents in Group                 : " << count[i] << "\n";
+                }
+            }
+
+                // carbon emission analysis
+            void analyseEmissions() {
+                string modes[] = {"Car", "Bus", "Bicycle", "Walking", "School Bus", "Carpool"};
+                int numModes = 6;
+
+                double modeEmission[6] = {0};
+                int modeCount[6] = {0};
+                double totalEmission = 0;
+
+                ResidentList* list = load->GetResidentList();
+                Resident* cur = list->GetHead();
+
+                while (cur != nullptr) {
+                    double em = computeEmission(cur);
+                    totalEmission += em;
+                    for (int m = 0; m < numModes; m++) {
+                        if (cur->modeOfTransport == modes[m]) {
+                            modeEmission[m] += em;
+                            modeCount[m]++;
+                            break;
+                        }
+                    }
+                    cur = cur->next;
+                }
+
+                cout << "\n" << string(65, '=') << "\n";
+                cout << "  Emission by mode of transportation\n";
+                cout << string(65, '=') << "\n";
+                cout << left << setw(14) << "Transportation"
+                    << setw(10) << "Count"
+                    << setw(24) << "Total emission"
+                    << "% of Total\n";
+                cout << string(65, '-') << "\n";
+
+                for (int m = 0; m < numModes; m++) {
+                    if (modeCount[m] == 0) continue;
+                    double pct = (totalEmission > 0) ? (modeEmission[m] / totalEmission * 100.0) : 0;
+                    cout << left << setw(14) << modes[m]
+                        << setw(10) << modeCount[m]
+                        << setw(24) << fixed << setprecision(2) << modeEmission[m]
+                        << fixed << setprecision(1) << pct << "%\n";
+                }
+
+                cout << string(65, '-') << "\n";
+                cout << "Total emissions: " << fixed << setprecision(2) << totalEmission << " kg CO2\n";
+                cout << string(65, '=') << "\n";
+
+            }
+
+    };
+
+        
  
 //Contains Bubble Sort, Linear search and Binary search on Linked Listss.
 class SortSearch {
@@ -455,6 +600,64 @@ class SortSearch {
         }
 };
 
+// method to compare emission in cities
+void compareCitiesEmission(computation& compA, computation& compB, computation& compC) {
+    string modes[] = {"Car", "Bus", "Bicycle", "Walking", "School Bus", "Carpool"};
+    int numModes = 6;
+    string cities[] = {"City A", "City B", "City C"};
+    computation* comps[] = {&compA, &compB, &compC};
+
+    double modeEmission[3][6] = {};
+    double cityTotal[3] = {};
+
+    for (int c = 0; c < 3; c++) {
+        ResidentList* list = comps[c]->load->GetResidentList();
+        Resident* cur = list->GetHead();
+        while (cur != nullptr) {
+            double em = comps[c]->computeEmission(cur);
+            cityTotal[c] += em;
+            for (int m = 0; m < numModes; m++) {
+                if (cur->modeOfTransport == modes[m]) {
+                    modeEmission[c][m] += em;
+                    break;
+                }
+            }
+            cur = cur->next;
+        }
+    }
+
+    cout << "\n" << string(75, '=') << "\n";
+    cout << "  Emission Comparison accross the datasets\n";
+    cout << string(75, '=') << "\n";
+    cout << left << setw(14) << "Transportation"
+         << setw(20) << "City A"
+         << setw(20) << "City B"
+         << setw(20) << "City C" << "\n";
+    cout << string(75, '-') << "\n";
+
+    for (int m = 0; m < numModes; m++) {
+        bool anyData = false;
+        for (int c = 0; c < 3; c++) if (modeEmission[c][m] > 0) anyData = true;
+        if (!anyData) continue;
+        cout << left << setw(14) << modes[m];
+        for (int c = 0; c < 3; c++) //haha c++ reference
+            cout << setw(20) << fixed << setprecision(2) << modeEmission[c][m];
+        cout << "\n";
+    }
+
+    cout << string(75, '-') << "\n";
+    cout << left << setw(14) << "Total";
+    for (int c = 0; c < 3; c++) //haha another c++ reference good one yeah 
+        cout << setw(20) << fixed << setprecision(2) << cityTotal[c];
+    cout << "\n" << string(75, '=') << "\n";
+
+    int highestCity = 0;
+    for (int c = 1; c < 3; c++)
+        if (cityTotal[c] > cityTotal[highestCity]) highestCity = c;
+    cout << "Highest emitting city: " << cities[highestCity]
+         << " (" << fixed << setprecision(2) << cityTotal[highestCity] << " kg CO2)\n";
+}
+
 int main(){
 
     cout<<"============================================================================================\n";
@@ -463,10 +666,12 @@ int main(){
     
     ResidentList listA, listB, listC; // make lists for each city
     FileManager fmcityA, fmcityB, fmcityC;  //both are on stack
+    //Make the Lists from each data set 
     fmcityA.SetResidentList(&listA); 
     fmcityB.SetResidentList(&listB);
     fmcityC.SetResidentList(&listC);
     
+    //Load from the data set
     fmcityA.loadFromCSV("../../data/dataset1-cityA.csv");
     fmcityB.loadFromCSV("../../data/dataset2-cityB.csv");   //load using the function for load csv
     fmcityC.loadFromCSV("../../data/dataset3-cityC.csv"); 
@@ -494,6 +699,18 @@ int main(){
     cout<<"Total emission City B: "<<computeB.computeTotalEmission()<<endl;;    //Print the total emissions for each city
     cout<<"Total emission City C: "<<computeC.computeTotalEmission()<<endl;;
 
+    
+    cout << "\n=== CITY A ===\n"; computeA.analyzeByAgeGroup();
+    cout << "\n=== CITY B ===\n"; computeB.analyzeByAgeGroup();
+    cout << "\n=== CITY C ===\n"; computeC.analyzeByAgeGroup();
+
+    cout << "\n=== CITY A ===\n"; computeA.analyseEmissions();
+    cout << "\n=== CITY B ===\n"; computeB.analyseEmissions();
+    cout << "\n=== CITY C ===\n"; computeC.analyseEmissions();
+
+    //Comp emissions across cities
+    compareCitiesEmission(computeA, computeB, computeC);
+
     //Creating objects for each city dataset.
     SortSearch cityA(&listA, &computeA);
     SortSearch cityB(&listB, &computeB);
@@ -501,12 +718,15 @@ int main(){
 
     //Sorting
     cityA.bubbleSort("age", "asc");             //Sorting by age in an assending order
+    listA.traversePrint();
     cityB.bubbleSort("distance", "desc");       //Sorting by distance in a descending order
+    listB.traversePrint();
     cityC.bubbleSort("emission", "asc");        //Sorting by emissions in an assending order
+    listC.traversePrint();
 
     //Performing linear search on dataset based on criterias
     cityA.linearSearch("transport", "Car");
-    cityB.linearSearch("age_group", "26-45");
+    cityB.linearSearch("age_group", "20-25");
     cityC.linearSearch("distance_above", "15");
     cityA.linearSearch("distance_below", "10");
 
