@@ -3,22 +3,6 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-<<<<<<< HEAD
-using namespace std;
-
-class Resident {
-public:
-    string residentID;
-    int age;
-    string modeOfTransport;
-    double dailyDistance;
-    double carbonEmissionFactor;
-    int averageDayPerMonth;
-
-    Resident() {}
-
-    Resident(string id, int a, string mode, double distance, double factor, int days) {
-=======
 #include <chrono>
 #include <cstring>
 #include <algorithm>
@@ -63,7 +47,6 @@ struct Resident {
     }
     
     Resident(string id, int a, string mode, int distance, double factor, int days) {
->>>>>>> c391b76eb575c1d8761aac1253b3649cfa3afcc6
         residentID = id;
         age = a;
         modeOfTransport = mode;
@@ -71,32 +54,6 @@ struct Resident {
         carbonEmissionFactor = factor;
         averageDayPerMonth = days;
     }
-<<<<<<< HEAD
-
-    double calculateEmission() {
-        return dailyDistance * carbonEmissionFactor * averageDayPerMonth;
-    }
-};
-
-class ResidentArray {
-private:
-    Resident residents[300];
-    int size = 0;
-
-public:
-    void addResident(Resident r) {
-        if (size < 300) { 
-            residents[size] = r;
-            size++;
-        }
-    }
-
-    int getSize() {
-        return size;
-    }
-
-    Resident getResident(int index) {
-=======
 };
 
 // Array-based container for residents
@@ -214,39 +171,10 @@ public:
     }
     
     const Resident& operator[](int index) const {
->>>>>>> c391b76eb575c1d8761aac1253b3649cfa3afcc6
         return residents[index];
     }
 };
 
-<<<<<<< HEAD
-class FileManager {
-private:
-    ResidentArray* resArray;
-
-public:
-    void setResidentArray(ResidentArray* array) {
-        this->resArray = array;
-    }
-
-    void loadFromCSV(string datafile) {
-        ifstream file(datafile);
-
-        if (!file.is_open()) {
-            cout << "Error opening file: " << datafile << endl;
-            return;
-        }
-
-        string line;
-
-        getline(file, line);
-
-        while (getline(file, line)) {
-            stringstream ss(line);
-
-            string id, ageStr, transport, distanceStr, factorStr, daysStr;
-
-=======
 // File manager for array implementation
 class FileManagerArray {
 private:
@@ -278,105 +206,12 @@ public:
             stringstream ss(line);
             string id, ageStr, transport, distanceStr, factorStr, daysStr;
             
->>>>>>> c391b76eb575c1d8761aac1253b3649cfa3afcc6
             getline(ss, id, ',');
             getline(ss, ageStr, ',');
             getline(ss, transport, ',');
             getline(ss, distanceStr, ',');
             getline(ss, factorStr, ',');
             getline(ss, daysStr);
-<<<<<<< HEAD
-
-            Resident resident(
-                id,
-                stoi(ageStr),
-                transport,
-                stod(distanceStr),
-                stod(factorStr),
-                stoi(daysStr)
-            );
-
-            resArray->addResident(resident);
-        }
-
-        file.close();
-    }
-};
-
-void analyzeDataset(ResidentArray& dataset, string cityName) {
-    double totalDatasetEmission = 0;
-
-    double carEmission = 0;
-    double busEmission = 0;
-    double bicycleEmission = 0;
-    double walkingEmission = 0;
-    double schoolBusEmission = 0;
-    double carpoolEmission = 0;
-
-    for (int i = 0; i < dataset.getSize(); i++) {
-        Resident r = dataset.getResident(i);
-
-        double emission = r.calculateEmission();
-
-        totalDatasetEmission += emission;
-
-        if (r.modeOfTransport == "Car") {
-            carEmission += emission;
-        }
-        else if (r.modeOfTransport == "Bus") {
-            busEmission += emission;
-        }
-        else if (r.modeOfTransport == "Bicycle") {
-            bicycleEmission += emission;
-        }
-        else if (r.modeOfTransport == "Walking") {
-            walkingEmission += emission;
-        }
-        else if (r.modeOfTransport == "School Bus") {
-            schoolBusEmission += emission;
-        }
-        else if (r.modeOfTransport == "Carpool") {
-            carpoolEmission += emission;
-        }
-    }
-
-    cout << fixed << setprecision(2);
-
-    cout << "\n================ " << cityName << " ================\n";
-
-    cout << "\n----- TOTAL CARBON EMISSION PER DATASET -----\n";
-    cout << cityName << " Total Carbon Emission: " << totalDatasetEmission << " kg CO2\n";
-
-    cout << "\n----- CARBON EMISSION PER MODE OF TRANSPORT -----\n";
-    cout << left << setw(15) << "Transport Mode" << setw(20) << "Emission (kg CO2)" << endl;
-    cout << "------------------------------------------\n";
-
-    cout << left << setw(15) << "Car" << carEmission << endl;
-    cout << left << setw(15) << "Bus" << busEmission << endl;
-    cout << left << setw(15) << "Bicycle" << bicycleEmission << endl;
-    cout << left << setw(15) << "Walking" << walkingEmission << endl;
-    cout << left << setw(15) << "School Bus" << schoolBusEmission << endl;
-    cout << left << setw(15) << "Carpool" << carpoolEmission << endl;
-}
-
-int main() {
-    ResidentArray cityA, cityB, cityC;
-
-    FileManager fileA, fileB, fileC;
-
-    fileA.setResidentArray(&cityA);
-    fileB.setResidentArray(&cityB);
-    fileC.setResidentArray(&cityC);
-
-    fileA.loadFromCSV("../../data/dataset1-cityA.csv");
-    fileB.loadFromCSV("../../data/dataset2-cityB.csv");
-    fileC.loadFromCSV("../../data/dataset3-cityC.csv");
-
-    analyzeDataset(cityA, "City A");
-    analyzeDataset(cityB, "City B");
-    analyzeDataset(cityC, "City C");
-
-=======
             
             try {
                 int age = stoi(ageStr);
@@ -858,28 +693,45 @@ int main() {
     fmB.setResidentArray(&arrayB);
     fmC.setResidentArray(&arrayC);
     
-    // Load data from CSV files - UPDATE THESE PATHS TO MATCH YOUR SYSTEM
-    // Option 1: If CSV files are in the same directory as the executable
-    bool loadA = fmA.loadFromCSV("dataset1-cityA.csv");
-    bool loadB = fmB.loadFromCSV("dataset2-cityB.csv");
-    bool loadC = fmC.loadFromCSV("dataset3-cityC.csv");
-    
-    // Option 2: If using full Windows paths (uncomment and use your actual path)
-    // bool loadA = fmA.loadFromCSV("C:\\Users\\Rakin\\Documents\\GitHub\\DSTR\\src\\array\\dataset1-cityA.csv");
-    // bool loadB = fmB.loadFromCSV("C:\\Users\\Rakin\\Documents\\GitHub\\DSTR\\src\\array\\dataset2-cityB.csv");
-    // bool loadC = fmC.loadFromCSV("C:\\Users\\Rakin\\Documents\\GitHub\\DSTR\\src\\array\\dataset3-cityC.csv");
-    
-    if (!loadA && !loadB && !loadC) {
-        cout << "\nERROR: Could not find any CSV files!" << endl;
-        cout << "Please ensure the CSV files are in the same directory as the executable." << endl;
-        cout << "Current directory: " << __FILE__ << endl;
-        cout << "\nPlace the following files in the same folder as array_program.exe:" << endl;
-        cout << "  - dataset1-cityA.csv" << endl;
-        cout << "  - dataset2-cityB.csv" << endl;
-        cout << "  - dataset3-cityC.csv" << endl;
-        return 1;
+    string dataPath = "../../data/";
+
+    string pathsToTry[] = {
+        "../../data/",           // From src/array to DSTR/data
+        "../data/",              // From array to src/data (if data was in src)
+        "./data/",               // Data folder in same directory
+        "../../src/array/data/", // Data inside src/array/data
+    };
+
+    bool loadA = false, loadB = false, loadC = false;
+
+    for (int attempt = 0; attempt < 4; attempt++) {
+        if (loadA && loadB && loadC) break; // All files loaded successfully
+        
+        string fileA = pathsToTry[attempt] + "dataset1-cityA.csv";
+        string fileB = pathsToTry[attempt] + "dataset2-cityB.csv";
+        string fileC = pathsToTry[attempt] + "dataset3-cityC.csv";
+        
+        cout << "Trying path: " << pathsToTry[attempt] << endl;
+        
+        if (!loadA) {
+            cout << "  Attempting to load City A from: " << fileA << endl;
+            loadA = fmA.loadFromCSV(fileA);
+        }
+        if (!loadB) {
+            cout << "  Attempting to load City B from: " << fileB << endl;
+            loadB = fmB.loadFromCSV(fileB);
+        }
+        if (!loadC) {
+            cout << "  Attempting to load City C from: " << fileC << endl;
+            loadC = fmC.loadFromCSV(fileC);
+        }
     }
-    
+
+    if (!loadA && !loadB && !loadC) {
+    cout << "\nERROR: Could not find any CSV files!" << endl;
+    return 1;
+    }
+
     // Display loaded data
     if (loadA) {
         cout << "\n============================================================================================\n";
@@ -1057,6 +909,5 @@ int main() {
     cout << "\nSpace Complexity:\n";
     cout << "  - Memory per resident: " << sizeof(Resident) << " bytes\n";
     
->>>>>>> c391b76eb575c1d8761aac1253b3649cfa3afcc6
     return 0;
 }
