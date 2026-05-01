@@ -386,7 +386,80 @@ public:
         }
         cout << string(68, '-') << endl;
     }
-};
+
+    void printAgeGroupSummary(const string& cityName) const {
+        ResidentArray* arr = load->getResidentArray();
+        if (arr == nullptr || arr->getSize() == 0) return;
+
+        double totalEmission[MAX_AGE_GROUPS] = {0};
+        int residentCount[MAX_AGE_GROUPS] = {0};
+
+        for (int i = 0; i < arr->getSize(); i++) {
+            int g = getAgeGroupIndex((*arr)[i].age);
+            if (g == -1) continue;
+            residentCount[g]++;
+            totalEmission[g] += computeEmission((*arr)[i]);
+        }
+
+        cout << "\n" << cityName << ":\n";
+        cout << left << setw(38) << "Age Group"
+            << setw(12) << "Residents"
+            << setw(24) << "Total Emission (kg CO2)"
+            << setw(20) << "Avg per Resident" << endl;
+        cout << string(94, '-') << endl;
+
+        for (int g = 0; g < MAX_AGE_GROUPS; g++) {
+            if (residentCount[g] == 0) continue;
+            string label = to_string(AGE_GROUPS[g].minAge) + "-" + to_string(AGE_GROUPS[g].maxAge)
+                        + " (" + AGE_GROUPS[g].name + ")";
+            cout << left << setw(38) << label
+                << setw(12) << residentCount[g]
+                << setw(24) << fixed << setprecision(2) << totalEmission[g]
+                << setw(20) << (totalEmission[g] / residentCount[g]) << endl;
+        }
+        cout << string(94, '-') << endl;
+    }
+
+
+    void printModeSummary(const string& cityName) const {
+        ResidentArray* arr = load->getResidentArray();
+        if (arr == nullptr || arr->getSize() == 0) return;
+
+        string transportModes[] = {"Car", "Bus", "Bicycle", "Walking", "School Bus", "Carpool"};
+        int modeCount[6] = {0};
+        double modeEmission[6] = {0};
+
+        for (int i = 0; i < arr->getSize(); i++) {
+            for (int m = 0; m < 6; m++) {
+                if ((*arr)[i].modeOfTransport == transportModes[m]) {
+                    modeCount[m]++;
+                    modeEmission[m] += computeEmission((*arr)[i]);
+                    break;
+                }
+            }
+        }
+
+        cout << "\n" << cityName << ":\n";
+        cout << left << setw(14) << "Mode"
+             << setw(12) << "Residents"
+             << setw(24) << "Total Emission (kg CO2)"
+             << setw(20) << "Avg per Resident" << endl;
+        cout << string(70, '-') << endl;
+
+        for (int m = 0; m < 6; m++) {
+            if (modeCount[m] > 0) {
+                cout << left << setw(14) << transportModes[m]
+                     << setw(12) << modeCount[m]
+                     << setw(24) << fixed << setprecision(2) << modeEmission[m]
+                     << setw(20) << (modeEmission[m] / modeCount[m]) << endl;
+            }
+        }
+        cout << string(70, '-') << endl;
+    }
+
+}; 
+
+
 
 // Sort and Search class for array implementation
 class SortSearchArray {
@@ -482,6 +555,26 @@ public:
         cout << "Memory Usage: " << getMemoryUsage() << " bytes\n";
     }
     
+    void printSortedTable(const string& label) const {
+    cout << "\nSorted Results - " << label << ":\n";
+    cout << left << setw(12) << "ID" << setw(6) << "Age" << setw(15) << "Transport"
+         << setw(12) << "Distance" << setw(18) << "Emission Factor"
+         << setw(10) << "Days" << setw(12) << "Emission" << endl;
+    cout << string(85, '-') << endl;
+
+    for (int i = 0; i < arr->getSize(); i++) {
+        Resident& res = (*arr)[i];
+        cout << left << setw(12) << res.residentID
+             << setw(6) << res.age
+             << setw(15) << res.modeOfTransport
+             << setw(12) << res.dailyDistance
+             << setw(18) << res.carbonEmissionFactor
+             << setw(10) << res.averageDayPerMonth
+             << setw(12) << fixed << setprecision(2) << comp->computeEmission(res) << endl;
+    }
+    cout << string(85, '-') << endl;
+    }
+
     void linearSearch(string searchBy, string value) {
         auto start = chrono::high_resolution_clock::now();
         
@@ -811,6 +904,37 @@ int main() {
         compC.calculateEmissionsByAgeGroup();
     }
     
+    cout << "\n============================================================================================\n";
+    cout << "CROSS-CITY COMPARISON: Emissions by Age Group\n";
+    cout << "============================================================================================\n";
+    if (loadA) compA.printAgeGroupSummary("City A (Metropolitan)");
+    if (loadB) compB.printAgeGroupSummary("City B (University Town)");
+    if (loadC) compC.printAgeGroupSummary("City C (Suburban/Rural)");
+
+    cout << "\n============================================================================================\n";
+    cout << "CROSS-CITY COMPARISON: Emissions by Mode of Transport\n";
+    cout << "============================================================================================\n";
+    if (loadA) compA.printModeSummary("City A (Metropolitan)");
+    if (loadB) compB.printModeSummary("City B (University Town)");
+    if (loadC) compC.printModeSummary("City C (Suburban/Rural)");
+
+    // Combined totals across all cities
+    cout << "\n============================================================================================\n";
+    cout << "OVERALL TOTAL EMISSIONS ACROSS ALL CITIES\n";
+    cout << "============================================================================================\n";
+    double grandTotal = 0;
+    if (loadA) grandTotal += compA.computeTotalEmission();
+    if (loadB) grandTotal += compB.computeTotalEmission();
+    if (loadC) grandTotal += compC.computeTotalEmission();
+    cout << left << setw(30) << "City A Total:"
+        << (loadA ? to_string((int)compA.computeTotalEmission()) : "N/A") << " kg CO2\n";
+    cout << left << setw(30) << "City B Total:"
+        << (loadB ? to_string((int)compB.computeTotalEmission()) : "N/A") << " kg CO2\n";
+    cout << left << setw(30) << "City C Total:"
+        << (loadC ? to_string((int)compC.computeTotalEmission()) : "N/A") << " kg CO2\n";
+    cout << string(50, '-') << "\n";
+    cout << left << setw(30) << "Grand Total:" << fixed << setprecision(2) << grandTotal << " kg CO2\n";
+
     // Sorting and searching experiments
     if (loadA || loadB || loadC) {
         cout << "\n============================================================================================\n";
@@ -820,14 +944,17 @@ int main() {
         if (loadA) {
             SortSearchArray ssaA(&arrayA, &compA);
             ssaA.bubbleSort("age", "asc");
+            ssaA.printSortedTable("City A | Bubble Sort | Age Ascending");
         }
         if (loadB) {
             SortSearchArray ssaB(&arrayB, &compB);
             ssaB.bubbleSort("distance", "desc");
+            ssaB.printSortedTable("City B | Bubble Sort | Distance Descending");
         }
         if (loadC) {
             SortSearchArray ssaC(&arrayC, &compC);
             ssaC.bubbleSort("emission", "asc");
+            ssaC.printSortedTable("City C | Bubble Sort | Emission Ascending");
         }
         
         cout << "\n--- Additional Sorting Algorithm for Comparison ---\n";
@@ -838,18 +965,21 @@ int main() {
             fmA.loadFromCSV("dataset1-cityA.csv");
             SortSearchArray ssaA(&arrayA, &compA);
             ssaA.selectionSort("age", "asc");
+            ssaA.printSortedTable("City A | Selection Sort | Age Ascending");
         }
         if (loadB) {
             arrayB.clear();
             fmB.loadFromCSV("dataset2-cityB.csv");
             SortSearchArray ssaB(&arrayB, &compB);
             ssaB.selectionSort("distance", "desc");
+            ssaB.printSortedTable("City B | Selection Sort | Distance Descending");
         }
         if (loadC) {
             arrayC.clear();
             fmC.loadFromCSV("dataset3-cityC.csv");
             SortSearchArray ssaC(&arrayC, &compC);
             ssaC.selectionSort("emission", "asc");
+            ssaC.printSortedTable("City C | Selection Sort | Emission Ascending");
         }
         
         // Searching experiments
