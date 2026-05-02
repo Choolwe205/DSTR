@@ -1018,26 +1018,8 @@ int main() {
         }
     }
     
-    // Performance summary
-    cout << "\n============================================================================================\n";
-    cout << "PERFORMANCE ANALYSIS SUMMARY - ARRAY IMPLEMENTATION\n";
-    cout << "============================================================================================\n";
-    cout << "Array Characteristics:\n";
-    cout << "  - Contiguous memory allocation\n";
-    cout << "  - O(1) random access via index\n";
-    cout << "  - Fixed capacity (can be resized with reallocation)\n";
-    cout << "  - Cache-friendly due to data locality\n";
-    cout << "\nTime Complexities:\n";
-    cout << "  - Access: O(1)\n";
-    cout << "  - Search (unsorted): O(n)\n";
-    cout << "  - Search (sorted/binary): O(log n)\n";
-    cout << "  - Insertion (end): O(1)\n";
-    cout << "  - Insertion (middle): O(n)\n";
-    cout << "  - Deletion: O(n)\n";
-    cout << "  - Bubble Sort: O(n^2)\n";
-    cout << "  - Selection Sort: O(n^2)\n";
-    cout << "\nSpace Complexity:\n";
-    cout << "  - Memory per resident: " << sizeof(Resident) << " bytes\n";
+    //cout << "\nSpace Complexity:\n";
+    //cout << "  - Memory per resident: " << sizeof(Resident) << " bytes\n";
     
     return 0;
 }
