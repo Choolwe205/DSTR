@@ -555,7 +555,6 @@ int main() {
         "../../data/",           // From src/array to DSTR/data
         "../data/",              // From array to src/data
         "./data/",               // Data folder in same directory
-        "C:/Users/Rakin/Documents/GitHub/DSTR/data/",  // Absolute Windows path
         ""                       // Current directory
     };
     int numPaths = sizeof(pathsToTry) / sizeof(pathsToTry[0]);
@@ -577,9 +576,12 @@ int main() {
     fmB.setResidentArray(&arrayB);
     fmC.setResidentArray(&arrayC);
     
+    // Measure data loading time
+    auto loadStart = chrono::high_resolution_clock::now();
     bool loadA = fmA.loadFromCSV(fileAPath);
     bool loadB = fmB.loadFromCSV(fileBPath);
     bool loadC = fmC.loadFromCSV(fileCPath);
+    auto loadEnd = chrono::high_resolution_clock::now();
     
     if (!loadA && !loadB && !loadC) {
         cout << "ERROR: Could not find any CSV files!" << endl;
@@ -588,12 +590,20 @@ int main() {
         return 1;
     }
     
+    cout << "\n[Data Loading Statistics]";
+    cout << "\nTime taken to load all CSV files: " 
+         << chrono::duration<double, milli>(loadEnd - loadStart).count() << " ms";
+    cout << "\nMemory usage per resident: " << sizeof(Resident) << " bytes";
+    cout << "\nTotal memory for City A: " << arrayA.getSize() * sizeof(Resident) << " bytes";
+    cout << "\nTotal memory for City B: " << arrayB.getSize() * sizeof(Resident) << " bytes";
+    cout << "\nTotal memory for City C: " << arrayC.getSize() * sizeof(Resident) << " bytes\n";
+    
     // Display loaded data summary
-    if (loadA) cout << "City A: Loaded " << arrayA.getSize() << " residents" << endl;
+    if (loadA) cout << "\nCity A: Loaded " << arrayA.getSize() << " residents" << endl;
     if (loadB) cout << "City B: Loaded " << arrayB.getSize() << " residents" << endl;
     if (loadC) cout << "City C: Loaded " << arrayC.getSize() << " residents" << endl;
     
-    // Display ALL data for each city (similar to previous code)
+    // Display ALL data for each city
     if (loadA) {
         cout << "\n============================================================================================\n";
         cout << "City A Data (" << arrayA.getSize() << " residents)\n";
@@ -620,34 +630,54 @@ int main() {
     ComputationArray compB(&fmB);
     ComputationArray compC(&fmC);
     
-    // Calculate total emissions
+    // Calculate total emissions with timing
     cout << "\n============================================================================================\n";
     cout << "TOTAL CARBON EMISSIONS BY CITY\n";
     cout << "============================================================================================\n";
-    if (loadA) cout << "Total emission for City A: " << fixed << setprecision(2) << compA.computeTotalEmission() << " kg CO2" << endl;
-    if (loadB) cout << "Total emission for City B: " << fixed << setprecision(2) << compB.computeTotalEmission() << " kg CO2" << endl;
-    if (loadC) cout << "Total emission for City C: " << fixed << setprecision(2) << compC.computeTotalEmission() << " kg CO2" << endl;
+    
+    auto emissionStart = chrono::high_resolution_clock::now();
+    double totalA = compA.computeTotalEmission();
+    double totalB = compB.computeTotalEmission();
+    double totalC = compC.computeTotalEmission();
+    auto emissionEnd = chrono::high_resolution_clock::now();
+    
+    if (loadA) cout << "Total emission for City A: " << fixed << setprecision(2) << totalA << " kg CO2" << endl;
+    if (loadB) cout << "Total emission for City B: " << fixed << setprecision(2) << totalB << " kg CO2" << endl;
+    if (loadC) cout << "Total emission for City C: " << fixed << setprecision(2) << totalC << " kg CO2" << endl;
+    
+    cout << "\n[Emission Calculation Statistics]";
+    cout << "\nTime taken to calculate all emissions: " 
+         << chrono::duration<double, milli>(emissionEnd - emissionStart).count() << " ms\n";
     
     // Emissions by mode
     if (loadA) {
         cout << "\n============================================================================================\n";
         cout << "City A - Emissions by Mode\n";
         cout << "============================================================================================\n";
+        auto modeStart = chrono::high_resolution_clock::now();
         compA.calculateEmissionsByMode();
+        auto modeEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Time: " << chrono::duration<double, milli>(modeEnd - modeStart).count() << " ms]\n";
     }
     
     if (loadB) {
         cout << "\n============================================================================================\n";
         cout << "City B - Emissions by Mode\n";
         cout << "============================================================================================\n";
+        auto modeStart = chrono::high_resolution_clock::now();
         compB.calculateEmissionsByMode();
+        auto modeEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Time: " << chrono::duration<double, milli>(modeEnd - modeStart).count() << " ms]\n";
     }
     
     if (loadC) {
         cout << "\n============================================================================================\n";
         cout << "City C - Emissions by Mode\n";
         cout << "============================================================================================\n";
+        auto modeStart = chrono::high_resolution_clock::now();
         compC.calculateEmissionsByMode();
+        auto modeEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Time: " << chrono::duration<double, milli>(modeEnd - modeStart).count() << " ms]\n";
     }
     
     // Emissions by age group
@@ -655,21 +685,30 @@ int main() {
         cout << "\n============================================================================================\n";
         cout << "City A - Emissions by Age Group\n";
         cout << "============================================================================================\n";
+        auto ageStart = chrono::high_resolution_clock::now();
         compA.calculateEmissionsByAgeGroup();
+        auto ageEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Time: " << chrono::duration<double, milli>(ageEnd - ageStart).count() << " ms]\n";
     }
     
     if (loadB) {
         cout << "\n============================================================================================\n";
         cout << "City B - Emissions by Age Group\n";
         cout << "============================================================================================\n";
+        auto ageStart = chrono::high_resolution_clock::now();
         compB.calculateEmissionsByAgeGroup();
+        auto ageEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Time: " << chrono::duration<double, milli>(ageEnd - ageStart).count() << " ms]\n";
     }
     
     if (loadC) {
         cout << "\n============================================================================================\n";
         cout << "City C - Emissions by Age Group\n";
         cout << "============================================================================================\n";
+        auto ageStart = chrono::high_resolution_clock::now();
         compC.calculateEmissionsByAgeGroup();
+        auto ageEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Time: " << chrono::duration<double, milli>(ageEnd - ageStart).count() << " ms]\n";
     }
     
     // ========== SORTING EXPERIMENTS ==========
@@ -679,23 +718,38 @@ int main() {
     
     if (loadA) {
         SortSearchArray sorter(&arrayA, &compA);
+        auto sortStart = chrono::high_resolution_clock::now();
         sorter.bubbleSort("age", "asc");
+        auto sortEnd = chrono::high_resolution_clock::now();
         cout << "\n--- City A Sorted by Age (Ascending) - ALL " << arrayA.getSize() << " records ---\n";
         arrayA.traversePrint();
+        cout << "\n[Bubble Sort Performance] Time: " 
+             << chrono::duration<double, milli>(sortEnd - sortStart).count() << " ms";
+        cout << " | Memory: " << arrayA.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     if (loadB) {
         SortSearchArray sorter(&arrayB, &compB);
+        auto sortStart = chrono::high_resolution_clock::now();
         sorter.bubbleSort("distance", "desc");
+        auto sortEnd = chrono::high_resolution_clock::now();
         cout << "\n--- City B Sorted by Distance (Descending) - ALL " << arrayB.getSize() << " records ---\n";
         arrayB.traversePrint();
+        cout << "\n[Bubble Sort Performance] Time: " 
+             << chrono::duration<double, milli>(sortEnd - sortStart).count() << " ms";
+        cout << " | Memory: " << arrayB.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     if (loadC) {
         SortSearchArray sorter(&arrayC, &compC);
+        auto sortStart = chrono::high_resolution_clock::now();
         sorter.bubbleSort("emission", "asc");
+        auto sortEnd = chrono::high_resolution_clock::now();
         cout << "\n--- City C Sorted by Emission (Ascending) - ALL " << arrayC.getSize() << " records ---\n";
         arrayC.traversePrint();
+        cout << "\n[Bubble Sort Performance] Time: " 
+             << chrono::duration<double, milli>(sortEnd - sortStart).count() << " ms";
+        cout << " | Memory: " << arrayC.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     // Selection Sort for comparison
@@ -708,9 +762,16 @@ int main() {
         fmA_sel.loadFromCSV(fileAPath);
         ComputationArray compA_sel(&fmA_sel);
         SortSearchArray ssaA_sel(&arrayA_sel, &compA_sel);
+        
+        auto selStart = chrono::high_resolution_clock::now();
         ssaA_sel.selectionSort("age", "asc");
+        auto selEnd = chrono::high_resolution_clock::now();
+        
         cout << "\n--- Selection Sorted City A by Age (Ascending) - ALL " << arrayA_sel.getSize() << " records ---\n";
         arrayA_sel.traversePrint();
+        cout << "\n[Selection Sort Performance] Time: " 
+             << chrono::duration<double, milli>(selEnd - selStart).count() << " ms";
+        cout << " | Memory: " << arrayA_sel.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     if (loadB) {
@@ -720,9 +781,16 @@ int main() {
         fmB_sel.loadFromCSV(fileBPath);
         ComputationArray compB_sel(&fmB_sel);
         SortSearchArray ssaB_sel(&arrayB_sel, &compB_sel);
+        
+        auto selStart = chrono::high_resolution_clock::now();
         ssaB_sel.selectionSort("distance", "desc");
+        auto selEnd = chrono::high_resolution_clock::now();
+        
         cout << "\n--- Selection Sorted City B by Distance (Descending) - ALL " << arrayB_sel.getSize() << " records ---\n";
         arrayB_sel.traversePrint();
+        cout << "\n[Selection Sort Performance] Time: " 
+             << chrono::duration<double, milli>(selEnd - selStart).count() << " ms";
+        cout << " | Memory: " << arrayB_sel.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     if (loadC) {
@@ -732,9 +800,16 @@ int main() {
         fmC_sel.loadFromCSV(fileCPath);
         ComputationArray compC_sel(&fmC_sel);
         SortSearchArray ssaC_sel(&arrayC_sel, &compC_sel);
+        
+        auto selStart = chrono::high_resolution_clock::now();
         ssaC_sel.selectionSort("emission", "asc");
+        auto selEnd = chrono::high_resolution_clock::now();
+        
         cout << "\n--- Selection Sorted City C by Emission (Ascending) - ALL " << arrayC_sel.getSize() << " records ---\n";
         arrayC_sel.traversePrint();
+        cout << "\n[Selection Sort Performance] Time: " 
+             << chrono::duration<double, milli>(selEnd - selStart).count() << " ms";
+        cout << " | Memory: " << arrayC_sel.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     // ========== SEARCHING EXPERIMENTS ==========
@@ -745,18 +820,39 @@ int main() {
     // Linear Search Examples
     if (loadA) {
         SortSearchArray searcher(&arrayA, &compA);
+        auto searchStart = chrono::high_resolution_clock::now();
         searcher.linearSearch("transport", "Car");
+        auto searchEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Linear Search Performance] Time: " 
+             << chrono::duration<double, milli>(searchEnd - searchStart).count() << " ms";
+        cout << " | Memory: " << arrayA.getSize() * sizeof(Resident) << " bytes\n";
+        
+        searchStart = chrono::high_resolution_clock::now();
         searcher.linearSearch("distance_below", "10");
+        searchEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Linear Search Performance] Time: " 
+             << chrono::duration<double, milli>(searchEnd - searchStart).count() << " ms";
+        cout << " | Memory: " << arrayA.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     if (loadB) {
         SortSearchArray searcher(&arrayB, &compB);
+        auto searchStart = chrono::high_resolution_clock::now();
         searcher.linearSearch("age_group", "18-25");
+        auto searchEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Linear Search Performance] Time: " 
+             << chrono::duration<double, milli>(searchEnd - searchStart).count() << " ms";
+        cout << " | Memory: " << arrayB.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     if (loadC) {
         SortSearchArray searcher(&arrayC, &compC);
+        auto searchStart = chrono::high_resolution_clock::now();
         searcher.linearSearch("distance_above", "15");
+        auto searchEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Linear Search Performance] Time: " 
+             << chrono::duration<double, milli>(searchEnd - searchStart).count() << " ms";
+        cout << " | Memory: " << arrayC.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     // Binary Search Examples
@@ -769,7 +865,13 @@ int main() {
         fmA_bin.loadFromCSV(fileAPath);
         ComputationArray compA_bin(&fmA_bin);
         SortSearchArray binSearcher(&arrayA_bin, &compA_bin);
+        
+        auto binStart = chrono::high_resolution_clock::now();
         binSearcher.binarySearch("transport", "Bicycle");
+        auto binEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Binary Search Performance] Time: " 
+             << chrono::duration<double, milli>(binEnd - binStart).count() << " ms";
+        cout << " | Memory (array): " << arrayA_bin.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     if (loadB) {
@@ -779,7 +881,13 @@ int main() {
         fmB_bin.loadFromCSV(fileBPath);
         ComputationArray compB_bin(&fmB_bin);
         SortSearchArray binSearcher(&arrayB_bin, &compB_bin);
+        
+        auto binStart = chrono::high_resolution_clock::now();
         binSearcher.binarySearch("age_group", "18-25");
+        auto binEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Binary Search Performance] Time: " 
+             << chrono::duration<double, milli>(binEnd - binStart).count() << " ms";
+        cout << " | Memory (array): " << arrayB_bin.getSize() * sizeof(Resident) << " bytes\n";
     }
     
     if (loadC) {
@@ -789,12 +897,32 @@ int main() {
         fmC_bin.loadFromCSV(fileCPath);
         ComputationArray compC_bin(&fmC_bin);
         SortSearchArray binSearcher(&arrayC_bin, &compC_bin);
+        
+        auto binStart = chrono::high_resolution_clock::now();
         binSearcher.binarySearch("distance_above", "15");
+        auto binEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Binary Search Performance] Time: " 
+             << chrono::duration<double, milli>(binEnd - binStart).count() << " ms";
+        cout << " | Memory (array): " << arrayC_bin.getSize() * sizeof(Resident) << " bytes\n";
+        
+        binStart = chrono::high_resolution_clock::now();
         binSearcher.binarySearch("distance_below", "10");
+        binEnd = chrono::high_resolution_clock::now();
+        cout << "\n[Binary Search Performance] Time: " 
+             << chrono::duration<double, milli>(binEnd - binStart).count() << " ms";
+        cout << " | Memory (array): " << arrayC_bin.getSize() * sizeof(Resident) << " bytes\n";
     }
     
+    // Performance summary
+    cout << "\n============================================================================================\n";
+    cout << "PERFORMANCE ANALYSIS SUMMARY - ARRAY IMPLEMENTATION\n";
+    cout << "============================================================================================\n";
     cout << "\nSpace Complexity:\n";
     cout << "  - Memory per resident: " << sizeof(Resident) << " bytes\n";
+    cout << "  - No additional pointer overhead (unlike linked lists)\n";
+    cout << "\nActual Measured Performance:\n";
+    cout << "  - Data Loading: " << chrono::duration<double, milli>(loadEnd - loadStart).count() << " ms\n";
+    cout << "  - Emission Calculation: " << chrono::duration<double, milli>(emissionEnd - emissionStart).count() << " ms\n";
     
     cout << "\nPress Enter to exit...";
     cin.get();
