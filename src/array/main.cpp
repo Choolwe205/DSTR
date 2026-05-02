@@ -957,31 +957,6 @@ int main() {
             ssaC.printSortedTable("City C | Bubble Sort | Emission Ascending");
         }
         
-        cout << "\n--- Additional Sorting Algorithm for Comparison ---\n";
-        
-        // Reload data for fair comparison
-        if (loadA) {
-            arrayA.clear();
-            fmA.loadFromCSV("dataset1-cityA.csv");
-            SortSearchArray ssaA(&arrayA, &compA);
-            ssaA.selectionSort("age", "asc");
-            ssaA.printSortedTable("City A | Selection Sort | Age Ascending");
-        }
-        if (loadB) {
-            arrayB.clear();
-            fmB.loadFromCSV("dataset2-cityB.csv");
-            SortSearchArray ssaB(&arrayB, &compB);
-            ssaB.selectionSort("distance", "desc");
-            ssaB.printSortedTable("City B | Selection Sort | Distance Descending");
-        }
-        if (loadC) {
-            arrayC.clear();
-            fmC.loadFromCSV("dataset3-cityC.csv");
-            SortSearchArray ssaC(&arrayC, &compC);
-            ssaC.selectionSort("emission", "asc");
-            ssaC.printSortedTable("City C | Selection Sort | Emission Ascending");
-        }
-        
         // Searching experiments
         cout << "\n============================================================================================\n";
         cout << "SEARCHING EXPERIMENTS\n";
@@ -994,7 +969,7 @@ int main() {
         }
         if (loadB) {
             SortSearchArray ssaB(&arrayB, &compB);
-            ssaB.linearSearch("age_group", "26-45");
+            ssaB.linearSearch("age_group", "18-25");
         }
         if (loadC) {
             SortSearchArray ssaC(&arrayC, &compC);
