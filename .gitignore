@@ -1,6 +1,6 @@
 # Ignore compiled files
 *.exe
-
+.bin
 # Optional
 # *.o
 # *.out
