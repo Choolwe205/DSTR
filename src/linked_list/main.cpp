@@ -726,7 +726,7 @@ int main(){
 
     //Performing linear search on dataset based on criterias
     cityA.linearSearch("transport", "Car");
-    cityB.linearSearch("age_group", "20-25");
+    cityB.linearSearch("age_group", "18-25");
     cityC.linearSearch("distance_above", "15");
     cityA.linearSearch("distance_below", "10");
 
