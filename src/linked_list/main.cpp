@@ -663,7 +663,8 @@ int main(){
     cout<<"============================================================================================\n";
     cout<<"-------The following is an Implementation of linked lists for DSTR PART 1-------\n";
     cout<<"============================================================================================\n";
-    
+    cout<<"Linked Lists"<<endl;
+    return 0;
     ResidentList listA, listB, listC; // make lists for each city
     FileManager fmcityA, fmcityB, fmcityC;  //both are on stack
     //Make the Lists from each data set 
